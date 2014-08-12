@@ -23,12 +23,20 @@
 
 # Flask imports
 from flask import (
-    Flask,redirect, url_for,
+    Flask,
+    redirect, 
+    url_for,
+    render_template,
     request
     )
 from flask.ext.login import (
-    LoginManager,login_user,logout_user,current_user,
+    LoginManager,
+    login_user,
+    logout_user,
     login_required)
+from flask_wtf import Form
+from wtforms import StringField, TextAreaField, SubmitField
+from wtforms.validators import Length, DataRequired
 
 # Extra libraries
 from yaml import load, dump
@@ -43,14 +51,21 @@ app.config.from_pyfile('homepage.cfg')
 login_manager = LoginManager()
 login_manager.init_app(app)
 
+
+# Formas
+class ExperimentF(Form):
+    name    = StringField('Nombre', [Length(min=4, max=255),DataRequired()])
+    content = TextAreaField(u'Definición del experimento')
+    save=SubmitField("Guardar")
+    cancel=SubmitField("Cancelar")
+
 # Loading users
 with open(app.config['USERS_FILE']) as usersf:
     USERS = dict([ (k,User(k,v)) for k, v in load(usersf).iteritems()])
 
 # Loading experiments
-with open(app.config['EXPERIMENT_FILE']) as usersf:
+with open(app.config['EXPERIMENTS_FILE']) as usersf:
     EXPS = dict([ (k,User(k,v)) for k, v in load(usersf).iteritems()])
-
 
 # Managin login
 @login_manager.user_loader
@@ -64,9 +79,7 @@ def load_user(userid):
 # Managing dashboard
 @app.route("/dashboard")
 def dashboard():
-    print "hello"
-    return u"dahsboard soon"
-
+    return render_template('dashboard.html')
 
 # Managing users
 @app.route("/dashboard/create/user")
@@ -79,20 +92,47 @@ def user_new():
     return u"new user"
 
 # Managing experiments
-@app.route("/dashboard/create/experiment")
+@app.route("/dashboard/create/experiment", methods=['GET','POST'])
 def experiment_new():
-    u=uuid.uuid4()
-    expid=str(u)
-    EXPS[expid]={}
-    with open(app.config['EXPERIMENTS_FILE'],"w") as expsf:
-        dump(dict([ (k,v.data) for k, v in USERS.iteritems()]),expsf)
+    form=ExperimentF(request.form)
+    if form.cancel.data:
+        return redirect(url_for(dashboard))
+    if form.validate_on_submit():
+        u=uuid.uuid4()
+        expid=str(u)
+        EXPS[expid]={}
+        EXPS[expid]['content']=form.content.data
+        EXPS[expid]['content']=form.name.data
+        with open(app.config['EXPERIMENTS_FILE'],"w") as expsf:
+            dump(dict([ (k,v.data) for k, v in USERS.iteritems()]),expsf)
+
+        return redirect('/dashboard/info/experiment/'+expid)
+    else:
+        return render_template('experiment_edit.html',form=form)
+
+
     return u"new experiments"
+
+
+
+@app.route("/dashboard/info/experiment/<expid>")
+def experiment_info(expid):
+     return str(EXPS[expid])
+
+
+
+@app.route("/list/experiments")
+def experiment_list():
+    return render_template('experiments.html',EXPS)
+
+
+
 
 @app.route("/dashboard/invite")
 def experiment_invite():
     return redirect(dashboard)
 
-@app.route("/dashboard/live")
+@app.route("/dashboard/live/<expid>")
 def experiment_live():
     return redirect(dashboard)
 

@@ -1,0 +1,20 @@
+{% extends "default.html" %}
+
+{% block title %}Dashboard: Edditing experiment - {% endblock %}
+
+{% block content %}
+
+<h1>
+Experimento, prueba
+</h1>
+
+<form action="/dashboard/create/experiment" method="POST" accept-charset="utf-8" enctype="multipart/form-data">
+    {{ form.csrf_token }}
+    {{ form.name.label }} {{ form.name(size=20) }}
+	{{ form.content.label }} {{form.content(rows=24,cols=24)}}
+	{{ form.save() }} {{form.cancel()}} 
+</form>
+
+{%endblock%}
+
+

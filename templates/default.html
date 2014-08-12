@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+
+<!--[if IE 9]><html class="lt-ie10" lang="en" > <![endif]-->
+<html class="no-js" lang="{{lang}}" >
+<head>
+    <meta charset="utf-8"/>
+    <meta name="description" content="Para hacer encuestas"/>
+    <meta name="generator" content="Flask"/>
+    <meta name="robots"    content="all" />
+    <meta name="keywords"  content="Golem, Mauricio Reyes, Ivan Meza"/>
+    <meta name="copyright" content='2014 Ivan Vladimir Meza Ruiz'/>
+    <meta name="author"    content="Ivan Vladimir Meza Ruiz"/>
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <link rel="stylesheet" href="{{url_for('static', filename='css/normalize.css')}}"/>
+	<link rel="stylesheet" href="{{url_for('static', filename='css/foundation.css')}}"/>
+			
+    <title>{% block title %}{% endblock %} Experimentos Golem </title>
+
+</head>
+
+<body>
+	{% block content %}{% endblock %}
+</body>
+
+</html>
