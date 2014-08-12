@@ -22,7 +22,10 @@
 
 
 # Flask imports
-from flask import Flask,redirect, url_for
+from flask import (
+    Flask,redirect, url_for,
+    request
+    )
 from flask.ext.login import (
     LoginManager,login_user,logout_user,current_user,
     login_required)
@@ -44,6 +47,10 @@ login_manager.init_app(app)
 with open(app.config['USERS_FILE']) as usersf:
     USERS = dict([ (k,User(k,v)) for k, v in load(usersf).iteritems()])
 
+# Loading experiments
+with open(app.config['EXPERIMENT_FILE']) as usersf:
+    EXPS = dict([ (k,User(k,v)) for k, v in load(usersf).iteritems()])
+
 
 # Managin login
 @login_manager.user_loader
@@ -60,31 +67,32 @@ def dashboard():
     print "hello"
     return u"dahsboard soon"
 
-@app.route("/dashboard/user/new")
+
+# Managing users
+@app.route("/dashboard/create/user")
 def user_new():
     u=uuid.uuid4()
     userid=str(u)
     USERS[userid]=User(userid,[])
-    print "USERID",userid
-    print USERS
     with open(app.config['USERS_FILE'],"w") as usersf:
         dump(dict([ (k,v.data) for k, v in USERS.iteritems()]),usersf)
-
     return u"new user"
 
-@app.route("/dashboard/experiment/new")
+# Managing experiments
+@app.route("/dashboard/create/experiment")
 def experiment_new():
-    return redirect(dashboard)
+    u=uuid.uuid4()
+    expid=str(u)
+    EXPS[expid]={}
+    with open(app.config['EXPERIMENTS_FILE'],"w") as expsf:
+        dump(dict([ (k,v.data) for k, v in USERS.iteritems()]),expsf)
+    return u"new experiments"
 
-@app.route("/dashboard/experiment/create")
-def experiment_create():
-    return redirect(dashboard)
- 
-@app.route("/dashboard/experiment/invite")
+@app.route("/dashboard/invite")
 def experiment_invite():
     return redirect(dashboard)
 
-@app.route("/dashboard/experiment/live")
+@app.route("/dashboard/live")
 def experiment_live():
     return redirect(dashboard)
 
@@ -103,8 +111,11 @@ def user():
 @app.route("/<iduser>")
 def login(iduser):
     user=load_user(iduser)
-    login_user(user)
-    return redirect(url_for("user"))
+    if user:
+        login_user(user)
+        return redirect(url_for("user"))
+    else:
+        return "No usuario" 
  
 
 # Managing experiments
