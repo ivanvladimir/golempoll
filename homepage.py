@@ -54,10 +54,11 @@ login_manager.init_app(app)
 
 # Formas
 class ExperimentF(Form):
-    name    = StringField('Nombre', [Length(min=4, max=255),DataRequired()])
-    content = TextAreaField(u'Definición del experimento')
-    save=SubmitField("Guardar")
-    cancel=SubmitField("Cancelar")
+    name        = StringField('Nombre', [Length(min=4, max=255),DataRequired()])
+    description = StringField(u'Descripción', [Length(min=4, max=255),DataRequired()])
+    content     = TextAreaField(u'Definición del experimento')
+    save        = SubmitField("Guardar")
+    cancel      = SubmitField("Cancelar")
 
 # Loading users
 with open(app.config['USERS_FILE']) as usersf:
@@ -102,7 +103,8 @@ def experiment_new():
         expid=str(u)
         EXPS[expid]={}
         EXPS[expid]['content']=form.content.data
-        EXPS[expid]['content']=form.name.data
+        EXPS[expid]['name']=form.name.data
+        EXPS[expid]['description']=form.description.data
         with open(app.config['EXPERIMENTS_FILE'],"w") as expsf:
             dump(dict([ (k,v.data) for k, v in USERS.iteritems()]),expsf)
 
@@ -111,22 +113,17 @@ def experiment_new():
         return render_template('experiment_edit.html',form=form)
 
 
-    return u"new experiments"
-
-
-
 @app.route("/dashboard/info/experiment/<expid>")
 def experiment_info(expid):
-     return str(EXPS[expid])
+    if not EXPS.has_key(expid):
+        return render_template('error.html',message="Experimento no definido")
+    return render_template('experiment_info.html',exp=EXPS[expid])
 
 
 
 @app.route("/list/experiments")
 def experiment_list():
-    return render_template('experiments.html',EXPS)
-
-
-
+    return render_template('experiments.html',exps=EXPS)
 
 @app.route("/dashboard/invite")
 def experiment_invite():
