@@ -3,8 +3,8 @@
 # ----------------------------------------------------------------------
 # polling system for golem
 # ----------------------------------------------------------------------
-# ivan vladimir meza-ruiz/ ivanvladimir at turing.iimas.unam.mx
-# 2013/iimas/unam
+# Ivan Vladimir Meza-Ruiz/ ivanvladimir at turing.iimas.unam.mx
+# 2014/iimas/unam
 # ----------------------------------------------------------------------
 # homepage.py is free software: you can redistribute it and/or modify
 #    it under the terms of the gnu general public license as published by
@@ -35,11 +35,11 @@ from flask.ext.login import (
     logout_user,
     login_required)
 from flask_wtf import Form
-from wtforms import StringField, TextAreaField, SubmitField
-from wtforms.validators import Length, DataRequired
+from wtforms import StringField, TextAreaField, SubmitField, validators, DateField, SelectField
 
 # Extra libraries
 from yaml import load, dump
+import time
 import uuid
 
 # App imports
@@ -54,19 +54,39 @@ login_manager.init_app(app)
 
 # Formas
 class ExperimentF(Form):
-    name        = StringField('Nombre', [Length(min=4, max=255),DataRequired()])
-    description = StringField(u'Descripción', [Length(min=4, max=255),DataRequired()])
-    content     = TextAreaField(u'Definición del experimento')
-    save        = SubmitField("Guardar")
-    cancel      = SubmitField("Cancelar")
+    name         = StringField('Nombre', [validators.Length(min=4, max=255),validators.DataRequired()])
+    description  = StringField(u'Descripción', [validators.Length(min=4,max=255),validators.DataRequired()])
+    content      = TextAreaField(u'Definición del experimento')
+    invitation   = TextAreaField(u'Texto para invitación')
+    instructions = TextAreaField(u'Instrucciones experimento')
+    save         = SubmitField("Guardar")
+    cancel       = SubmitField("Cancelar")
+
+class UserF(Form):
+    birthday     = DateField('Fecha nacimiento', [validators.DataRequired()])
+    level        = SelectField(u'Escolaridad', 
+                            [validators.DataRequired()],
+                        choices=[('prim','Primaria'),('sec','Secunadaria'),('prep','prepa'),('uni','universidad'),('pos','Posgrado')])
+    previous_ex  = SelectField(u'Experiencia previa con robots',
+                            [validators.DataRequired()],
+                        choices=[('no','No'),('yes','Sí')])
+    save         = SubmitField("Guardar")
+    cancel       = SubmitField("Cancelar")
+
+class UserInviteF(Form):
+    birthday     = DateField('Dirección electrónica', [validators.DataRequired(),validators.Email()])
+    save         = SubmitField("Enviar")
+    cancel       = SubmitField("Cancelar")
+
+
 
 # Loading users
 with open(app.config['USERS_FILE']) as usersf:
     USERS = dict([ (k,User(k,v)) for k, v in load(usersf).iteritems()])
 
 # Loading experiments
-with open(app.config['EXPERIMENTS_FILE']) as usersf:
-    EXPS = dict([ (k,User(k,v)) for k, v in load(usersf).iteritems()])
+with open(app.config['EXPERIMENTS_FILE']) as expsf:
+    EXPS = dict([ (k,v) for k, v in load(expsf).iteritems()])
 
 # Managin login
 @login_manager.user_loader
@@ -102,15 +122,68 @@ def experiment_new():
         u=uuid.uuid4()
         expid=str(u)
         EXPS[expid]={}
-        EXPS[expid]['content']=form.content.data
+        EXPS[expid]['content']=load(form.content.data)
         EXPS[expid]['name']=form.name.data
         EXPS[expid]['description']=form.description.data
+        EXPS[expid]['date_creation']=time.gmtime()
+        EXPS[expid]['date_modification']=time.gmtime()
+        EXPS[expid]['status']=False
+
         with open(app.config['EXPERIMENTS_FILE'],"w") as expsf:
-            dump(dict([ (k,v.data) for k, v in USERS.iteritems()]),expsf)
+            dump(dict([ (k,v) for k, v in EXPS.iteritems()]),expsf)
 
         return redirect('/dashboard/info/experiment/'+expid)
     else:
         return render_template('experiment_edit.html',form=form)
+
+
+
+@app.route("/dashboard/invite/user", methods=['GET','POST'])
+def user_invite():
+    form=UserInviteF(request.form)
+    if form.cancel.data:
+        return redirect(url_for(dashboard))
+    if form.validate_on_submit():
+        u=uuid.uuid4()
+        userid=str(u)
+        USERS[userid]={}
+        USERS[userid]['confirmed']=False
+
+        with open(app.config['EXPERIMENTS_FILE'],"w") as expsf:
+            dump(dict([ (k,v) for k, v in EXPS.iteritems()]),expsf)
+
+        return redirect('/dashboard/info/user/'+userid)
+    else:
+        return render_template('experiment_edit.html',form=form)
+
+@app.route("/confirm/<userid>", methods=['GET','POST'])
+def user_cofirmation(userid):
+    try:
+        if USERS[userid]['confirmed']:
+            return render_template('error.html',message="Usuario existente")
+    except KeyError:
+            return render_template('error.html',message="Usuario inexperado")
+
+    form=UserF(request.form)
+    if form.cancel.data:
+        return redirect(url_for(dashboard))
+    if form.validate_on_submit():
+        u=uuid.uuid4()
+        userid=str(u)
+        USERS[userid]['confirmed']=True
+        USERS[userid]['birthday']=form.birthday.data
+        USERS[userid]['level']=form.level.data
+        USERS[userid]['prev']=form.previous_ex.data
+
+        with open(app.config['EXPERIMENTS_FILE'],"w") as usersf:
+            dump(dict([ (k,v) for k, v in EXPS.iteritems()]),usersf)
+
+        return redirect('/dashboard/info/user/'+userid)
+    else:
+        return render_template('experiment_edit.html',form=form)
+
+
+
 
 
 @app.route("/dashboard/info/experiment/<expid>")
@@ -119,11 +192,60 @@ def experiment_info(expid):
         return render_template('error.html',message="Experimento no definido")
     return render_template('experiment_info.html',exp=EXPS[expid])
 
+@app.route("/dashboard/delete/experiment/<expid>")
+def experiment_delete(expid):
+    if not EXPS.has_key(expid):
+        return render_template('error.html',message="Experimento no definido")
+    del EXPS[expid]
+    return render_template('/dashboard')
 
 
-@app.route("/list/experiments")
+
+@app.route("/dashboard/list/experiment")
 def experiment_list():
-    return render_template('experiments.html',exps=EXPS)
+    return render_template('experiments.html',exps=EXPS,strftime=time.strftime)
+
+
+@app.route("/dashboard/list/user")
+def user_list():
+    return render_template('users.html',users=USERS,strftime=time.strftime)
+
+
+
+
+@app.route("/dashboard/clone/experiment/<expid>")
+def experiment_clone2(expid):
+    u=uuid.uuid4()
+    expid_=str(u)
+    EXPS[expid_]={}
+    EXPS[expid_]['content']= EXPS[expid]['content']
+    EXPS[expid_]['name']=EXPS[expid]['name']
+    EXPS[expid_]['description']= EXPS[expid]['description']
+    EXPS[expid_]['date_creation']=time.gmtime()
+    EXPS[expid_]['date_modification']=time.gmtime()
+    EXPS[expid]['status']=False
+
+    with open(app.config['EXPERIMENTS_FILE'],"w") as expsf:
+        dump(dict([ (k,v) for k, v in EXPS.iteritems()]),expsf)
+
+    return redirect('/dashboard/info/experiment/'+expid)
+
+@app.route("/dashboard/on/experiment/<expid>")
+def experiment_on(expid):
+    EXPS[expid]['status']=True
+    with open(app.config['EXPERIMENTS_FILE'],"w") as expsf:
+        dump(dict([ (k,v) for k, v in EXPS.iteritems()]),expsf)
+
+    return redirect('/dashboard/info/experiment/'+expid)
+
+@app.route("/dashboard/off/experiment/<expid>")
+def experiment_offf(expid):
+    EXPS[expid]['status']=False
+    with open(app.config['EXPERIMENTS_FILE'],"w") as expsf:
+        dump(dict([ (k,v) for k, v in EXPS.iteritems()]),expsf)
+
+    return redirect('/dashboard/info/experiment/'+expid)
+
 
 @app.route("/dashboard/invite")
 def experiment_invite():
