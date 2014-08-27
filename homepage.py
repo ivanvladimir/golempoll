@@ -35,7 +35,7 @@ from flask.ext.login import (
     logout_user,
     login_required)
 from flask_wtf import Form
-from wtforms import StringField, TextAreaField, SubmitField, validators, DateField, SelectField
+from wtforms import StringField, TextAreaField, SubmitField, validators, SelectField, IntegerField
 
 # Extra libraries
 from yaml import load, dump
@@ -63,18 +63,18 @@ class ExperimentF(Form):
     cancel       = SubmitField("Cancelar")
 
 class UserF(Form):
-    birthday     = DateField('Fecha nacimiento', [validators.DataRequired()])
+    birthday     = IntegerField(u'Año de nacimiento', [validators.DataRequired()])
     level        = SelectField(u'Escolaridad', 
                             [validators.DataRequired()],
-                        choices=[('prim','Primaria'),('sec','Secunadaria'),('prep','prepa'),('uni','universidad'),('pos','Posgrado')])
+                        choices=[('prim',u'Primaria'),('sec',u'Secunadaria'),('prep',u'Prepa'),('uni',u'Universidad'),('pos',u'Posgrado')])
     previous_ex  = SelectField(u'Experiencia previa con robots',
                             [validators.DataRequired()],
-                        choices=[('no','No'),('yes','Sí')])
+                        choices=[('no',u'No'),('yes',u'Sí')])
     save         = SubmitField("Guardar")
     cancel       = SubmitField("Cancelar")
 
 class UserInviteF(Form):
-    birthday     = DateField('Dirección electrónica', [validators.DataRequired(),validators.Email()])
+    correo       = StringField(u'Dirección electrónica', [validators.DataRequired(),validators.Email()])
     save         = SubmitField("Enviar")
     cancel       = SubmitField("Cancelar")
 
@@ -154,7 +154,7 @@ def user_invite():
 
         return redirect('/dashboard/info/user/'+userid)
     else:
-        return render_template('experiment_edit.html',form=form)
+        return render_template('email_edit.html',form=form)
 
 @app.route("/confirm/<userid>", methods=['GET','POST'])
 def user_cofirmation(userid):
@@ -168,8 +168,6 @@ def user_cofirmation(userid):
     if form.cancel.data:
         return redirect(url_for(dashboard))
     if form.validate_on_submit():
-        u=uuid.uuid4()
-        userid=str(u)
         USERS[userid]['confirmed']=True
         USERS[userid]['birthday']=form.birthday.data
         USERS[userid]['level']=form.level.data
@@ -180,7 +178,7 @@ def user_cofirmation(userid):
 
         return redirect('/dashboard/info/user/'+userid)
     else:
-        return render_template('experiment_edit.html',form=form)
+        return render_template('user_info_edit.html',form=form,userid=userid)
 
 
 
@@ -191,6 +189,13 @@ def experiment_info(expid):
     if not EXPS.has_key(expid):
         return render_template('error.html',message="Experimento no definido")
     return render_template('experiment_info.html',exp=EXPS[expid])
+
+@app.route("/dashboard/info/user/<expid>")
+def user_info(expid):
+    if not USERS.has_key(expid):
+        return render_template('error.html',message="Experimento no definido")
+    return render_template('user_info.html',user=USERS[expid])
+
 
 @app.route("/dashboard/delete/experiment/<expid>")
 def experiment_delete(expid):

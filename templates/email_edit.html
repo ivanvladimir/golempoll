@@ -1,4 +1,4 @@
-gm{% extends "default.html" %}
+{% extends "default.html" %}
 
 {% macro render_field(field) %}
   <dt>{{ field.label }}
@@ -13,7 +13,7 @@ gm{% extends "default.html" %}
   </dd>
 {% endmacro %}
 
-{% block title %}Dashboard: Información experimento - {% endblock %}
+{% block title %}Dashboard: Invitando a usuario - {% endblock %}
 
 {% block content %}
 
@@ -21,9 +21,11 @@ gm{% extends "default.html" %}
 Experimento, prueba
 </h1>
 
-	Nombre: {{ exp['name'] }}</br>
-	Descripción: {{ exp['description'] }}</br>
-	Definición: {{ exp['content'] }}
+<form action="/dashboard/invite/user" method="POST" accept-charset="utf-8" enctype="multipart/form-data">
+    {{ form.csrf_token }}
+    {{ render_field(form.correo,size=20)}}
+	{{ form.save() }} {{form.cancel()}} 
+</form>
 
 {%endblock%}
 

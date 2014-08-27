@@ -11,11 +11,8 @@ Usuarios
 <table>
   <thead>
   <tr>
-   <th>Activo</th>
-   <th>Nombre</th>
+   <th>Cofirmed</th>
    <th>Edad</th>
-   <th>Fecha</th>
-   <th>Acciones</th>
   </tr>
   </thead>
 
@@ -23,23 +20,13 @@ Usuarios
 {% for userid,user in users.iteritems() %}
 	<tr>
 	<td>
-	{% if exp['status']  %}
-		<a  href='/dashboard/off/user/{{expid}}' class="button tiny round success">On</a></td>
+	{% if user['confirmed']  %}
+		<a href='' class="button tiny round success">OK</a></td>
 	{%else%}
-		<a href='/dashboard/on/user/{{expid}}' class="button tiny round alert">Off</a>
+		<a href='' class="button tiny round alert">NO</a>
 	{%endif%}
 	</td>
-	<td><a href='/dashboard/info/user/{{expid}}'>{{ exp['name'] }}</a></td>
-	<td> {{ exp['description'] }}</td>
-	<td>{{ strftime("%a, %d %b %Y %H:%M:%S", exp['date_creation']) }}</td>
-	<td>{{ strftime("%a, %d %b %Y %H:%M:%S",exp['date_modification']) }}</td>
-	<td>
-	<ul class="button-group">
-	<li><a href='/dashboard/edit/user/{{expid}}' class="button small round">Editar</a></li>
-	<li><a href='/dashboard/clone/user/{{expid}}' class="button small round">Clonar</a></li>
-	<li><a href='/dashboard/delete/user/{{expid}}' class="alert button small round">Borrar</a></li>
-	</ul>
-	</td>
+	<td>{{userid}}</a></td>
 	</tr>
 {% endfor %}
 </tbody>

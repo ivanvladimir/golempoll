@@ -1,0 +1,17 @@
+{% extends "default.html" %}
+
+{% block title %}Dashboard: Información de usuario - {% endblock %}
+
+{% block content %}
+
+<h1>
+Usuario
+</h1>
+
+	Nombre: {{ user['name'] }}</br>
+	Descripción: {{ user['description'] }}</br>
+	Definición: {{ user['content'] }}
+
+{%endblock%}
+
+
