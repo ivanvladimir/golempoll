@@ -79,6 +79,14 @@ class UserInviteF(Form):
     cancel       = SubmitField("Cancelar")
 
 
+def save_users(USERS):
+    with open(app.config['USERS_FILE'],"w") as usersf:
+        dump(dict([ (k,v) for k, v in USERS.iteritems()]),usersf)
+
+def save_exps(EXPS):
+    with open(app.config['EXPERIMENTS_FILE'],"w") as expssf:
+        dump(dict([ (k,v) for k, v in EXPS.iteritems()]),expssf)
+
 
 # Loading users
 with open(app.config['USERS_FILE']) as usersf:
@@ -108,8 +116,7 @@ def user_new():
     u=uuid.uuid4()
     userid=str(u)
     USERS[userid]=User(userid,[])
-    with open(app.config['USERS_FILE'],"w") as usersf:
-        dump(dict([ (k,v.data) for k, v in USERS.iteritems()]),usersf)
+    save_users(USERS)
     return u"new user"
 
 # Managing experiments
@@ -129,8 +136,7 @@ def experiment_new():
         EXPS[expid]['date_modification']=time.gmtime()
         EXPS[expid]['status']=False
 
-        with open(app.config['EXPERIMENTS_FILE'],"w") as expsf:
-            dump(dict([ (k,v) for k, v in EXPS.iteritems()]),expsf)
+        save_exps(EXPS)
 
         return redirect('/dashboard/info/experiment/'+expid)
     else:
@@ -148,9 +154,6 @@ def user_invite():
         userid=str(u)
         USERS[userid]={}
         USERS[userid]['confirmed']=False
-
-        with open(app.config['EXPERIMENTS_FILE'],"w") as expsf:
-            dump(dict([ (k,v) for k, v in EXPS.iteritems()]),expsf)
 
         return redirect('/dashboard/info/user/'+userid)
     else:
@@ -173,8 +176,7 @@ def user_cofirmation(userid):
         USERS[userid]['level']=form.level.data
         USERS[userid]['prev']=form.previous_ex.data
 
-        with open(app.config['EXPERIMENTS_FILE'],"w") as usersf:
-            dump(dict([ (k,v) for k, v in EXPS.iteritems()]),usersf)
+        save_users(USERS)
 
         return redirect('/dashboard/info/user/'+userid)
     else:
@@ -230,8 +232,7 @@ def experiment_clone2(expid):
     EXPS[expid_]['date_modification']=time.gmtime()
     EXPS[expid]['status']=False
 
-    with open(app.config['EXPERIMENTS_FILE'],"w") as expsf:
-        dump(dict([ (k,v) for k, v in EXPS.iteritems()]),expsf)
+    save_exps(EXPS)
 
     return redirect('/dashboard/info/experiment/'+expid)
 
@@ -246,8 +247,7 @@ def experiment_on(expid):
 @app.route("/dashboard/off/experiment/<expid>")
 def experiment_offf(expid):
     EXPS[expid]['status']=False
-    with open(app.config['EXPERIMENTS_FILE'],"w") as expsf:
-        dump(dict([ (k,v) for k, v in EXPS.iteritems()]),expsf)
+    save_exps(EXPS)
 
     return redirect('/dashboard/info/experiment/'+expid)
 
