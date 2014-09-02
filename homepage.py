@@ -145,7 +145,33 @@ def experiment_new():
 
         return redirect('/dashboard/info/experiment/'+expid)
     else:
-        return render_template('experiment_edit.html',form=form)
+        return render_template('experiment_edit.html',form=form,type='create')
+
+
+
+@app.route("/dashboard/edit/experiment/<expid>", methods=['GET','POST'])
+def experiment_edit(expid):
+    if not EXPS.has_key(expid):
+        return render_template('error.html',message="Experimento no definido")
+    form=ExperimentF(request.form)
+    if form.cancel.data:
+        return redirect(url_for(dashboard))
+    if form.validate_on_submit():
+        EXPS[expid]['content']=load(form.content.data)
+        EXPS[expid]['name']=form.name.data
+        EXPS[expid]['description']=form.description.data
+        EXPS[expid]['date_modification']=time.time()
+        EXPS[expid]['status']=False
+        save_exps(EXPS)
+        return redirect('/dashboard/info/experiment/'+expid)
+    else:
+        form.content.data=dump(EXPS[expid]['content'])
+        form.name.data=EXPS[expid]['name']
+        form.description.data=EXPS[expid]['description']
+        return render_template('experiment_edit.html',
+                form=form,type='edit',expid=expid)
+
+
 
 @app.route("/dashboard/invite/user/<userid>", methods=['GET','POST'])
 def user_invite_userid(userid):
@@ -224,7 +250,7 @@ def experiment_delete(expid):
     if not EXPS.has_key(expid):
         return render_template('error.html',message="Experimento no definido")
     del EXPS[expid]
-    return render_template('/dashboard')
+    return redirect('/dashboard')
 
 
 
