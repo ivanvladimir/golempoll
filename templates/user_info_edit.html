@@ -13,22 +13,23 @@
   </dd>
 {% endmacro %}
 
-{% block title %}Dashboard: Invitando a usuario - {% endblock %}
+{% block title %}Dashboard: Información extra de usuario - {% endblock %}
 
 {% block content %}
 
 <h1>
-Experimento, prueba
+Información extra de usuario
 </h1>
 
 <form action="/confirm/{{userid}}" method="POST" accept-charset="utf-8" enctype="multipart/form-data">
     {{ form.csrf_token }}
-    {{ render_field(form.birthday,size=20)}}
-    {{ render_field(form.level,size=20) }}
-	{{ render_field(form.previous_ex,rows=24,cols=24)}}
+    {{ render_field(form.birthday)}}
+    {{ render_field(form.level) }}
+	{{ render_field(form.previous_ex)}}
 	{{ form.save() }} {{form.cancel()}} 
 </form>
 
+<p>Datos marcados con * necesarios</p>
 {%endblock%}
 
 

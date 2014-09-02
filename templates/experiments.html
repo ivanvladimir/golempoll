@@ -1,17 +1,9 @@
-{% extends "default.html" %}
+{% extends "dashboard.html" %}
 
-{% macro render_field(field) %}
-  <dt>{{ field.label }}
-  <dd>{{ field(**kwargs)|safe }}
-  {% if field.errors %}
-    <ul class=errors>
-    {% for error in field.errors %}
-      <li>{{ error }}</li>
-    {% endfor %}
-    </ul>
-  {% endif %}
-  </dd>
-{% endmacro %}
+{% block scripts %}
+<script src="http://bazalt-cms.com/assets/ng-table/0.3.1/ng-table.js"></script>
+<link data-require="ng-table@*" data-semver="0.3.1" rel="stylesheet" href="http://bazalt-cms.com/assets/ng-table/0.3.1/ng-table.css" />
+{% endblock %}
 
 {% block title %}Dashboard: Lista de experimentos - {% endblock %}
 
@@ -21,42 +13,32 @@
 Experimentos
 </h1>
 
-<table>
-  <thead>
-  <tr>
-   <th>Status</th>
-   <th>Nombre</th>
-   <th>Descripción</th>
-   <th>Fecha creación</th>
-   <th>Fecha modificatión</th>
-   <th>Acciones</th>
-  </tr>
-  </thead>
-
-<tbody>
-{% for expid,exp in exps.iteritems() %}
-	<tr>
-	<td>
-	{% if exp['status']  %}
-		<a  href='/dashboard/off/experiment/{{expid}}' class="button tiny round success">On</a></td>
-	{%else%}
-		<a href='/dashboard/on/experiment/{{expid}}' class="button tiny round alert">Off</a>
-	{%endif%}
-	</td>
-	<td><a href='/dashboard/info/experiment/{{expid}}'>{{ exp['name'] }}</a></td>
-	<td> {{ exp['description'] }}</td>
-	<td>{{ strftime("%a, %d %b %Y %H:%M:%S", exp['date_creation']) }}</td>
-	<td>{{ strftime("%a, %d %b %Y %H:%M:%S",exp['date_modification']) }}</td>
-	<td>
-	<ul class="button-group">
-	<li><a href='/dashboard/edit/experiment/{{expid}}' class="button small round">Editar</a></li>
-	<li><a href='/dashboard/clone/experiment/{{expid}}' class="button small round">Clonar</a></li>
-	<li><a href='/dashboard/delete/experiment/{{expid}}' class="alert button small round">Borrar</a></li>
-	</ul>
-	</td>
+<table ng-controller="ExperimentListCtrl">
+    <tr ng-repeat="(expid,exp) in exps">
+			expid
+			<td data-title="'Status'">
+				P
+            </td>
+            <td data-title="'Nombre'" sortable="'name'">
+                {{exp.name | angular}}
+            </td> 
+            <td data-title="'Descripción'">
+                {{exp.description | angular}}
+            </td> 
+            <td data-title="'Descripción'">
+                {{exp.description | angular }}
+            </td> 
+			<td data-title="'Creación'">
+				P
+            </td>
+ 			<td data-title="'Modificación'">
+				P
+            </td>
+  			<td data-title="'Acciones'">
+				P
+            </td>
+ 
 	</tr>
-{% endfor %}
-</tbody>
 </table>
 
 

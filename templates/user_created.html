@@ -1,0 +1,23 @@
+{% extends "dashboard.html" %}
+
+{% block title %} Usuario creado {% endblock %}
+
+{% block content %}
+
+<h3>
+Usuario creado exitosamente
+</h3>
+
+<p>Con id: {{userid}}</p>
+
+<p>
+Opciones
+<ul class="button-group [radius round]">
+  <li><a href="/dashboard/invite/user/{{userid}}" class="button">Mandar invitación</a></li>
+  <li><a href="/confirm/{{userid}}" class="button">Ir a espacio de usuario</a></li>
+</ul>
+</p>
+
+{%endblock%}
+
+

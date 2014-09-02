@@ -24,7 +24,8 @@
 # Flask imports
 from flask import (
     Flask,
-    redirect, 
+    redirect,
+    jsonify,
     url_for,
     render_template,
     request
@@ -34,6 +35,7 @@ from flask.ext.login import (
     login_user,
     logout_user,
     login_required)
+from flask.ext.triangle import Triangle
 from flask_wtf import Form
 from wtforms import StringField, TextAreaField, SubmitField, validators, SelectField, IntegerField
 
@@ -46,6 +48,7 @@ import uuid
 from User import User
 
 app = Flask('homepage')
+Triangle(app)
 app.config.from_pyfile('homepage.cfg')
 
 login_manager = LoginManager()
@@ -108,16 +111,18 @@ def load_user(userid):
 # Managing dashboard
 @app.route("/dashboard")
 def dashboard():
-    return render_template('dashboard.html')
+    return render_template('adminindex.html')
 
 # Managing users
 @app.route("/dashboard/create/user")
 def user_new():
     u=uuid.uuid4()
     userid=str(u)
-    USERS[userid]=User(userid,[])
+    USERS[userid]={}
+    USERS[userid]['user']=User(userid,[])
+    USERS[userid]['confirmed']=False
     save_users(USERS)
-    return u"new user"
+    return render_template('user_created.html',userid=userid)
 
 # Managing experiments
 @app.route("/dashboard/create/experiment", methods=['GET','POST'])
@@ -132,8 +137,8 @@ def experiment_new():
         EXPS[expid]['content']=load(form.content.data)
         EXPS[expid]['name']=form.name.data
         EXPS[expid]['description']=form.description.data
-        EXPS[expid]['date_creation']=time.gmtime()
-        EXPS[expid]['date_modification']=time.gmtime()
+        EXPS[expid]['date_creation']=time.time()
+        EXPS[expid]['date_modification']=time.time()
         EXPS[expid]['status']=False
 
         save_exps(EXPS)
@@ -142,6 +147,20 @@ def experiment_new():
     else:
         return render_template('experiment_edit.html',form=form)
 
+@app.route("/dashboard/invite/user/<userid>", methods=['GET','POST'])
+def user_invite_userid(userid):
+    try:
+        if USERS[userid]['confirmed']:
+            return render_template('error.html',message="Usuario existente")
+    except KeyError:
+            return render_template('error.html',message="Usuario inexperado")
+    form=UserInviteF(request.form)
+    if form.cancel.data:
+        return redirect(url_for(dashboard))
+    if form.validate_on_submit():
+        return redirect('/dashboard/info/user/'+userid)
+    else:
+        return render_template('email_edit.html',form=form)
 
 
 @app.route("/dashboard/invite/user", methods=['GET','POST'])
@@ -154,6 +173,7 @@ def user_invite():
         userid=str(u)
         USERS[userid]={}
         USERS[userid]['confirmed']=False
+        USERS[userid]['user']=User(userid,[])
 
         return redirect('/dashboard/info/user/'+userid)
     else:
@@ -212,6 +232,9 @@ def experiment_delete(expid):
 def experiment_list():
     return render_template('experiments.html',exps=EXPS,strftime=time.strftime)
 
+@app.route("/dashboard/experiments.json")
+def experiment_json():
+    return jsonify(EXPS)
 
 @app.route("/dashboard/list/user")
 def user_list():
@@ -228,8 +251,8 @@ def experiment_clone2(expid):
     EXPS[expid_]['content']= EXPS[expid]['content']
     EXPS[expid_]['name']=EXPS[expid]['name']
     EXPS[expid_]['description']= EXPS[expid]['description']
-    EXPS[expid_]['date_creation']=time.gmtime()
-    EXPS[expid_]['date_modification']=time.gmtime()
+    EXPS[expid_]['date_creation']=time.time()
+    EXPS[expid_]['date_modification']=time.time()
     EXPS[expid]['status']=False
 
     save_exps(EXPS)
