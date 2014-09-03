@@ -1,6 +1,11 @@
-{% extends "default.html" %}
+{% extends "dashboard.html" %}
 
-{% block title %}Dashboard: Lista de usuarios - {% endblock %}
+{% block scripts %}
+<script src="http://bazalt-cms.com/assets/ng-table/0.3.1/ng-table.js"></script>
+<link data-require="ng-table@*" data-semver="0.3.1" rel="stylesheet" href="http://bazalt-cms.com/assets/ng-table/0.3.1/ng-table.css" />
+{% endblock %}
+
+{% block title %}Lista de usuarios {% endblock %}
 
 {% block content %}
 
@@ -8,30 +13,25 @@
 Usuarios
 </h1>
 
-<table>
-  <thead>
-  <tr>
-   <th>Cofirmed</th>
-   <th>Edad</th>
-  </tr>
-  </thead>
-
-<tbody>
-{% for userid,user in users.iteritems() %}
-	<tr>
-	<td>
-	{% if user['confirmed']  %}
-		<a href='' class="button tiny round success">OK</a></td>
-	{%else%}
-		<a href='' class="button tiny round alert">NO</a>
-	{%endif%}
-	</td>
-	<td>{{userid}}</a></td>
+<table ng-controller="UserListCtrl" ng-table="tableParams" class="table">
+	<tr ng-repeat="user in users">
+			<td data-title="'Confirmed'">
+			    {% raw %}
+                {{user.confirmed | checkmark  }}
+			    {% endraw %}
+            </td>
+            <td data-title="'Correo'" sortable="'name'">
+                {{user.email | angular}}
+            </td> 
+            <td data-title="'Edad'" sortable="'age'">
+                {{user.age | angular }}
+            </td> 
+  			<td data-title="'Acciones'">
+				<a href="/dashboard/info/user/{{user.userid | angular}}" class="button tiny">Info</a>
+            </td>
+	
 	</tr>
-{% endfor %}
-</tbody>
 </table>
-
 
 {%endblock%}
 

@@ -28,7 +28,8 @@ from flask import (
     jsonify,
     url_for,
     render_template,
-    request
+    request,
+    make_response
     )
 from flask.ext.login import (
     LoginManager,
@@ -77,7 +78,7 @@ class UserF(Form):
     cancel       = SubmitField("Cancelar")
 
 class UserInviteF(Form):
-    correo       = StringField(u'Dirección electrónica', [validators.DataRequired(),validators.Email()])
+    email       = StringField(u'Dirección electrónica', [validators.DataRequired(),validators.Email()])
     save         = SubmitField("Enviar")
     cancel       = SubmitField("Cancelar")
 
@@ -93,7 +94,7 @@ def save_exps(EXPS):
 
 # Loading users
 with open(app.config['USERS_FILE']) as usersf:
-    USERS = dict([ (k,User(k,v)) for k, v in load(usersf).iteritems()])
+    USERS = dict([(k,v) for k, v in load(usersf).iteritems()])
 
 # Loading experiments
 with open(app.config['EXPERIMENTS_FILE']) as expsf:
@@ -120,7 +121,8 @@ def user_new():
     userid=str(u)
     USERS[userid]={}
     USERS[userid]['user']=User(userid,[])
-    USERS[userid]['confirmed']=False
+    USERS[userid]['info']={}
+    USERS[userid]['info']['confirmed']=False
     save_users(USERS)
     return render_template('user_created.html',userid=userid)
 
@@ -176,7 +178,7 @@ def experiment_edit(expid):
 @app.route("/dashboard/invite/user/<userid>", methods=['GET','POST'])
 def user_invite_userid(userid):
     try:
-        if USERS[userid]['confirmed']:
+        if USERS[userid]['info']['confirmed']:
             return render_template('error.html',message="Usuario existente")
     except KeyError:
             return render_template('error.html',message="Usuario inexperado")
@@ -184,6 +186,7 @@ def user_invite_userid(userid):
     if form.cancel.data:
         return redirect(url_for(dashboard))
     if form.validate_on_submit():
+
         return redirect('/dashboard/info/user/'+userid)
     else:
         return render_template('email_edit.html',form=form)
@@ -198,9 +201,11 @@ def user_invite():
         u=uuid.uuid4()
         userid=str(u)
         USERS[userid]={}
-        USERS[userid]['confirmed']=False
+        USERS[userid]['info']={}
+        USERS[userid]['info']['confirmed']=False
+        USERS[userid]['info']['email']=form.email.data
         USERS[userid]['user']=User(userid,[])
-
+        save_users(USERS)
         return redirect('/dashboard/info/user/'+userid)
     else:
         return render_template('email_edit.html',form=form)
@@ -208,7 +213,7 @@ def user_invite():
 @app.route("/confirm/<userid>", methods=['GET','POST'])
 def user_cofirmation(userid):
     try:
-        if USERS[userid]['confirmed']:
+        if USERS[userid]['info']['confirmed']:
             return render_template('error.html',message="Usuario existente")
     except KeyError:
             return render_template('error.html',message="Usuario inexperado")
@@ -217,11 +222,10 @@ def user_cofirmation(userid):
     if form.cancel.data:
         return redirect(url_for(dashboard))
     if form.validate_on_submit():
-        USERS[userid]['confirmed']=True
-        USERS[userid]['birthday']=form.birthday.data
-        USERS[userid]['level']=form.level.data
-        USERS[userid]['prev']=form.previous_ex.data
-
+        USERS[userid]['info']['confirmed']=True
+        USERS[userid]['info']['birthday']=form.birthday.data
+        USERS[userid]['info']['level']=form.level.data
+        USERS[userid]['info']['prev']=form.previous_ex.data
         save_users(USERS)
 
         return redirect('/dashboard/info/user/'+userid)
@@ -253,18 +257,38 @@ def experiment_delete(expid):
     return redirect('/dashboard')
 
 
+@app.route("/dashboard/select/experiment/<expid>")
+def experiment_select(expid):
+    if not EXPS.has_key(expid):
+        return render_template('error.html',message="Experimento no definido")
+    resp = make_response(render_template('adminindex.html'))
+    resp.set_cookie('project', expid)
+    return resp
+
+@app.route("/dashboard/cerrar/experiment")
+def experiment_close():
+    resp = make_response(render_template('adminindex.html'))
+    resp.set_cookie('project', "",expires=0)
+    return resp
+
+
 
 @app.route("/dashboard/list/experiment")
 def experiment_list():
-    return render_template('experiments.html',exps=EXPS,strftime=time.strftime)
+    return render_template('experiments.html',exps=EXPS)
 
 @app.route("/dashboard/experiments.json")
 def experiment_json():
     return jsonify(EXPS)
 
+@app.route("/dashboard/users.json")
+def user_json():
+    return jsonify(dict([(k,v['info']) for k,v in USERS.iteritems()]))
+
+
 @app.route("/dashboard/list/user")
 def user_list():
-    return render_template('users.html',users=USERS,strftime=time.strftime)
+    return render_template('users.html',users=USERS)
 
 
 

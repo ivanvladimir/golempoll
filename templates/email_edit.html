@@ -23,7 +23,7 @@ Experimento, prueba
 
 <form action="/dashboard/invite/user" method="POST" accept-charset="utf-8" enctype="multipart/form-data">
     {{ form.csrf_token }}
-    {{ render_field(form.correo,size=20)}}
+    {{ render_field(form.email)}}
 	{{ form.save() }} {{form.cancel()}} 
 </form>
 
