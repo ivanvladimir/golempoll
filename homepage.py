@@ -123,6 +123,7 @@ def user_new():
     USERS[userid]['user']=User(userid,[])
     USERS[userid]['info']={}
     USERS[userid]['info']['confirmed']=False
+    USERS[userid]['info']['exps']=[]
     save_users(USERS)
     return render_template('user_created.html',userid=userid)
 
@@ -263,12 +264,14 @@ def experiment_select(expid):
         return render_template('error.html',message="Experimento no definido")
     resp = make_response(render_template('adminindex.html'))
     resp.set_cookie('project', expid)
+    resp.set_cookie('project_name', EXPS[expid]['name'])
     return resp
 
 @app.route("/dashboard/cerrar/experiment")
 def experiment_close():
     resp = make_response(render_template('adminindex.html'))
     resp.set_cookie('project', "",expires=0)
+    resp.set_cookie('project_name', "",expires=0)
     return resp
 
 

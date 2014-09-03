@@ -63,6 +63,7 @@ experimentApp.controller('UserListCtrl', function ($scope,$http,$filter,ngTableP
 
 experimentApp.controller('CookieController', ['$scope','$cookies', function($scope,$cookies) {
 		 $scope.project = $cookies.project;
+		 $scope.project_name = $cookies.project_name;
 	}]);
 
 

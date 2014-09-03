@@ -13,8 +13,8 @@ Experimentos
 
 <table ng-controller="ExperimentListCtrl" ng-table="tableParams" class="table">
 	<tr ng-repeat="exp in exps">
-			<td data-title="'Status'">
-				<a href="/dashboard/{{'{{exp.status | switch}}'}}/experiment/{{exp.expid | angular}}" class="button tiny round">
+			<td data-title="'Activar'">
+				<a href="/dashboard/{{'{{exp.status | switch}}'}}/experiment/{{exp.expid | angular}}">
 			    {% raw %}
                 {{exp.status | checkmark  }}
 			    {% endraw %}
@@ -32,14 +32,14 @@ Experimentos
  			<td data-title="'Modificación'" sortable="'date_modification'" >
                 {{exp.date_modification_ | angular }}
             </td>
-_  			<td data-title="'Acciones'">
+            <td data-title="'Acciones'">
 				<a href="/dashboard/info/experiment/{{exp.expid | angular}}" class="button tiny">Info</a>
 				<a href="/dashboard/clone/experiment/{{exp.expid | angular}}" class="button tiny">Clonar</a>
 				<a href="/dashboard/edit/experiment/{{exp.expid | angular}}" class="button tiny">Editar</a>
 				<a href="/dashboard/delete/experiment/{{exp.expid | angular}}" class="button tiny alert">Borrar</a>
             </td>
-			<td data-title="'Seleccionar'">
-				<a href="/dashboard/select/experiment/{{exp.expid | angular}}" class="button tiny">Borrar</a>
+			<td data-title="'Activar'">
+				<a href="/dashboard/select/experiment/{{exp.expid | angular}}" class="button tiny">Sí</a>
             </td>
 
 	</tr>

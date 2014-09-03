@@ -44,9 +44,8 @@
         <li class="has-dropdown" ng-controller='CookieController'>
           <a href="#">
 			{% raw %}
-				{{ project | cookie_project }}
+				{{ project_name | cookie_project }}
 			{% endraw %}
-
 		  </a>
 	      <ul class="dropdown">
             <li><a href="/dashboard/cerrar/experiment">Cerrar</a></li>
