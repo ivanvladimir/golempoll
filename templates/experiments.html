@@ -10,9 +10,14 @@
 <h1>
 Experimentos
 </h1>
-
+<div class="row">
+    <div class="large-6 columns">
+	<label>Filtrar:</label> <input  type="text" placeholder="Inserta palabras clave"  ng-model="query"/>
+	</div>
+</div>
 <table ng-controller="ExperimentListCtrl" ng-table="tableParams" class="table">
-	<tr ng-repeat="exp in exps">
+
+	<tr ng-repeat="exp in exps | filter:query">
 			<td data-title="'Activar'">
 				<a href="/dashboard/{{'{{exp.status | switch}}'}}/experiment/{{exp.expid | angular}}">
 			    {% raw %}
@@ -26,10 +31,10 @@ Experimentos
             <td data-title="'Descripción'">
                 {{exp.description | angular }}
             </td> 
-			<td data-title="'Creación'" sortable="'date_creation'">
+			<td data-title="'Creación'" sortable="'date_creation_'">
                 {{exp.date_creation_ | angular }}
             </td>
- 			<td data-title="'Modificación'" sortable="'date_modification'" >
+ 			<td data-title="'Modificación'" sortable="'date_modification_'" >
                 {{exp.date_modification_ | angular }}
             </td>
             <td data-title="'Acciones'">

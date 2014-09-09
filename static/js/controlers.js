@@ -21,10 +21,10 @@ experimentApp.controller('ExperimentListCtrl', function ($scope,$http,$filter,ng
         total: $scope.exps.length, // length of data
         getData: function($defer, params) {
             // use build-in angular filter
-            var orderedData = params.sorting() ?
+            $scope.exps = params.sorting() ?
                                 $filter('orderBy')($scope.exps, params.orderBy()) :
                                 data;
-            $defer.resolve(orderedData.slice((params.page() - 1) * params.count(), params.page() * params.count()));
+            $defer.resolve($scopes.exp.slice((params.page() - 1) * params.count(), params.page() * params.count()));
         }
     }); 
 	});
@@ -52,10 +52,10 @@ experimentApp.controller('UserListCtrl', function ($scope,$http,$filter,ngTableP
         total: $scope.users.length, // length of data
         getData: function($defer, params) {
             // use build-in angular filter
-            var orderedData = params.sorting() ?
+            $scope.users = params.sorting() ?
                                 $filter('orderBy')($scope.users, params.orderBy()) :
                                 data;
-            $defer.resolve(orderedData.slice((params.page() - 1) * params.count(), params.page() * params.count()));
+            $defer.resolve($scope.users.slice((params.page() - 1) * params.count(), params.page() * params.count()));
         }
     }); 
 	});
