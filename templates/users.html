@@ -25,16 +25,18 @@ Usuarios
                 {{user.confirmed | checkmark  }}
 			    {% endraw %}
             </td>
-            <td data-title="'Correo'" sortable="'name'">
-				<a href="/dashboard/info/user/{{user.userid | angular}}">
-                {{user.email | angular}}
+            <td data-title="'Proyecto'" sortable="'experiment'">
+				<a href="/dashboard/info/experiment/{% raw %}{{user.experiment | active_experiment}}{% endraw %}">
+			    {% raw %}
+                {{user.experiment | active_experiment}}
+			    {% endraw %}
 				</a>
             </td> 
             <td data-title="'Edad'" sortable="'age'">
                 {{user.age | angular }}
             </td> 
   			<td data-title="'Invite'">
-				<a href="/dashboard/invite/{{user.userid | angular}}" class="button tiny">Yes
+				<a href="/dashboard/invite/user/{{user.userid | angular}}" class="button tiny">Yes
 				</a>
             </td>
 	

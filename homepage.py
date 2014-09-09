@@ -91,6 +91,10 @@ def save_exps(EXPS):
     with open(app.config['EXPERIMENTS_FILE'],"w") as expssf:
         dump(dict([ (k,v) for k, v in EXPS.iteritems()]),expssf)
 
+def save_items(ANS):
+    with open(app.config['ANSWERS_ITEMS'],"w") as ansf:
+        dump(ANS,ansf)
+
 
 # Loading users
 with open(app.config['USERS_FILE']) as usersf:
@@ -99,6 +103,11 @@ with open(app.config['USERS_FILE']) as usersf:
 # Loading experiments
 with open(app.config['EXPERIMENTS_FILE']) as expsf:
     EXPS = dict([ (k,v) for k, v in load(expsf).iteritems()])
+
+# Loading answers
+with open(app.config['ANSWERS_FILE']) as ansf:
+    ANS = dict([ (k,v) for k, v in load(ansf).iteritems()])
+
 
 # Managin login
 @login_manager.user_loader
@@ -176,25 +185,29 @@ def experiment_edit(expid):
 
 
 
-@app.route("/dashboard/invite/user/<userid>", methods=['GET','POST'])
+@app.route("/dashboard/invite/user/<userid>")
 def user_invite_userid(userid):
+    project = request.cookies.get('project')
+    if not project:
+        return render_template('error.html',message="Projecto no seleccionado")
     try:
-        if USERS[userid]['info']['confirmed']:
-            return render_template('error.html',message="Usuario existente")
+        USERS[userid]['info']['confirmed']
     except KeyError:
             return render_template('error.html',message="Usuario inexperado")
-    form=UserInviteF(request.form)
-    if form.cancel.data:
-        return redirect(url_for(dashboard))
-    if form.validate_on_submit():
-
-        return redirect('/dashboard/info/user/'+userid)
-    else:
-        return render_template('email_edit.html',form=form)
+    try:
+        USERS[userid]['info']['experiments'].append(project)
+    except KeyError:
+        USERS[userid]['info']['experiments']=[project]
+        save_users(USERS)
+    USERS[userid]['info']['experiments']=[project]
+    return redirect('/dashboard/info/user/'+userid)
 
 
 @app.route("/dashboard/invite/user", methods=['GET','POST'])
 def user_invite():
+    project = request.cookies.get('project')
+    if not project:
+        return render_template('error.html',message="Projecto no seleccionado")
     form=UserInviteF(request.form)
     if form.cancel.data:
         return redirect(url_for(dashboard))
@@ -204,6 +217,7 @@ def user_invite():
         USERS[userid]={}
         USERS[userid]['info']={}
         USERS[userid]['info']['confirmed']=False
+        USERS[userid]['info']['experiments']=[project]
         USERS[userid]['info']['email']=form.email.data
         USERS[userid]['user']=User(userid,[])
         save_users(USERS)
@@ -229,7 +243,7 @@ def user_cofirmation(userid):
         USERS[userid]['info']['prev']=form.previous_ex.data
         save_users(USERS)
 
-        return redirect('/dashboard/info/user/'+userid)
+        return redirect('/'+userid)
     else:
         return render_template('user_info_edit.html',form=form,userid=userid)
 
@@ -342,21 +356,30 @@ def logout():
     return redirect(url_for("user"))
  
 
-@app.route("/user")
-@login_required
-def user():
-    return "You are in"
- 
-# Managing users
+# Managing experiments
 @app.route("/<iduser>")
 def login(iduser):
     user=load_user(iduser)
+
     if user:
-        login_user(user)
-        return redirect(url_for("user"))
+        login_user(user['user'])
+        resp = make_response(render_template('poll.html'))
+        resp.set_cookie('running_exp', user['info']['experiments'][0])
+        return resp
     else:
-        return "No usuario" 
- 
+        return redirect('/')
+
+@app.route("/api/poll/<expid>")
+def poll_json(expid):
+    return jsonify(EXPS[expid]['content'])
+
+@app.route("/api/poll/<expid>/option",methods=['POST'])
+def push_json(expid):
+    option = request.args.get('emotion', '')
+    answer = request.args.get('answer', '')
+    return "ok"
+
+
 
 # Managing experiments
 if __name__ == '__main__':

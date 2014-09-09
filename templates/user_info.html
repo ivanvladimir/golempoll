@@ -7,11 +7,17 @@
 <h1>
 Usuario
 </h1>
-
-	Nombre: {{ user['name'] }}</br>
-	Descripción: {{ user['description'] }}</br>
-	Definición: {{ user['content'] }}
-
+	Confirmed: {{ user['info']['confirmed'] }}</br>
+	Experiments: 
+	<table class="table">
+	<tr>
+		{% for exp in  user['info']['experiments'] %}
+			<td>
+				<a href='/dashboard/info/experiment/{{exp}}'>{{exp}}</a>
+            </td>
+		{% endfor %}
+	</tr>
+	</table>
 {%endblock%}
 
 

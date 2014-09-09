@@ -17,3 +17,9 @@ expFilters.filter('cookie_project', function() {
 		      return input ? input : "No experimento";
 	  };
 });
+
+expFilters.filter('active_experiment', function() {
+	  return function(input) {
+		      return input ? input : "- - -";
+	  };
+});

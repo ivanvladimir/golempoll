@@ -37,7 +37,10 @@ experimentApp.controller('UserListCtrl', function ($scope,$http,$filter,ngTableP
 	var n = d.getFullYear(); 
 	for (var id in data) {
 		data[id].userid=id;
-		data[id].age=n-data[id].birthday
+		data[id].age=n-data[id].birthday;
+		if (typeof data[id].experiments != 'undefined'){
+			data[id].experiment=data[id].experiments[0]
+		}
 		data_.push(data[id]);
 	};
     $scope.users = data_;
@@ -67,4 +70,58 @@ experimentApp.controller('CookieController', ['$scope','$cookies', function($sco
 	}]);
 
 
+experimentApp.controller('GolemPollController', function ($scope, $cookies, golemPollService) {
+	$scope.poll = {};
+	golemPollService.getData('poll', $cookies.running_exp).then(function (data) {
+		$scope.poll = data;
+		var questions=[];
+		var options=[];
+        var option=0;
+		for (var tmp_ in data.media.files) {
+			questions.push(option);
+			option+=1;
+		};
+        option=0;
+		for (var tmp_ in data.options.labels) {
+			options.push(option);
+			option+=1;
+		};
+		$scope.questions=shuffle(questions);
+		$scope.options=shuffle(options);
+		$scope.current=0;
+		$scope.mainImage=$scope.poll.media.files[$scope.questions[$scope.current]];
 
+	},
+	function (error) {
+	}
+	);
+ 
+	$scope.save = function () {
+		if ($scope.poll.option) {
+			golemPollService.postData($routeParams.id, {option: $scope.poll.option}).then(function (data) {
+			},
+			function (error) {
+			});
+		} else {
+		}
+	};
+
+	$scope.next = function(chosen) {
+		var ans=$scope.poll.options.keys[chosen];
+		var opt=$scope.poll.media.keys[$scope.questions[$scope.current]];
+		golemPollService.postData($cookies.running_exp, {emotion: opt, answer: ans}).then(function (data) {
+			},
+			function (error) {
+			});
+
+		$scope.current+=1;
+		$scope.mainImage=$scope.poll.media.files[$scope.questions[$scope.current]];
+		$scope.options=shuffle($scope.options);
+	};
+ 
+});
+
+function shuffle(o){ //v1.0
+    for(var j, x, i = o.length; i; j = Math.floor(Math.random() * i), x = o[--i], o[i] = o[j], o[j] = x);
+    return o;
+};
