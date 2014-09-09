@@ -1,0 +1,22 @@
+{% extends "default.html" %}
+
+{% block scripts %}
+{% endblock %}
+
+{% block title %}Experimento{% endblock %}
+
+{% block content %}
+	<div class="row" ng-controller="GolemPollController">
+    	<div class="large-6 columns">
+			<img ng-src="{{mainImage | angular}}" >
+		</div>
+		<div ng-repeat="option in options">
+		<div class="large-5 columns" >
+  				<a href="#" class="button expand" ng-click="next(option)" >{% raw %}{{poll.options.labels[option] }}{% endraw %}</a>
+		</div>
+		</div>
+
+
+{%endblock%}
+
+
