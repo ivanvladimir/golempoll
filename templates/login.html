@@ -1,0 +1,35 @@
+{% extends "default.html" %}
+
+{% macro render_field(field) %}
+  <dt>{{ field.label }}
+  <dd>{{ field(**kwargs)|safe }}
+  {% if field.errors %}
+    <ul class=errors>
+    {% for error in field.errors %}
+      <li>{{ error }}</li>
+    {% endfor %}
+    </ul>
+  {% endif %}
+  </dd>
+{% endmacro %}
+
+
+
+{% block title %}Bienvenido{% endblock %}
+
+{% block content %}
+<h1>¡¡Bienvenido!!</h1> 
+
+<form action="/login" method="POST" accept-charset="utf-8" enctype="multipart/form-data">
+    {{ form.csrf_token }}
+    {{ render_field(form.admin)}}
+    {{ render_field(form.password)}}
+	{{ form.save() }}
+</form>
+
+
+
+
+{%endblock%}
+
+

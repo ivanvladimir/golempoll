@@ -32,6 +32,9 @@ Usuarios
 			    {% endraw %}
 				</a>
             </td> 
+            <td data-title="'Genero'" sortable="'gender'">
+                {{user.gender | angular }}
+            </td> 
             <td data-title="'Edad'" sortable="'age'">
                 {{user.age | angular }}
             </td> 

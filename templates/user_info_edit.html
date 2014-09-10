@@ -24,6 +24,7 @@ Información extra de usuario
 <form action="/confirm/{{userid}}" method="POST" accept-charset="utf-8" enctype="multipart/form-data">
     {{ form.csrf_token }}
     {{ render_field(form.birthday)}}
+    {{ render_field(form.genero) }}
     {{ render_field(form.level) }}
 	{{ render_field(form.previous_ex)}}
 	{{ form.save() }} {{form.cancel()}} 

@@ -29,7 +29,8 @@ from flask import (
     url_for,
     render_template,
     request,
-    make_response
+    make_response,
+    flash
     )
 from flask.ext.login import (
     LoginManager,
@@ -38,7 +39,14 @@ from flask.ext.login import (
     login_required)
 from flask.ext.triangle import Triangle
 from flask_wtf import Form
-from wtforms import StringField, TextAreaField, SubmitField, validators, SelectField, IntegerField
+from wtforms import (
+    StringField, 
+    TextAreaField, 
+    SubmitField, 
+    validators, 
+    SelectField,
+    PasswordField, 
+    IntegerField)
 
 # Extra libraries
 from yaml import load, dump
@@ -66,11 +74,19 @@ class ExperimentF(Form):
     save         = SubmitField("Guardar")
     cancel       = SubmitField("Cancelar")
 
+class LoginF(Form):
+    admin    = StringField('Administrador', [validators.Required()])
+    password = PasswordField('Password', [])
+    save     = SubmitField("Entrar")
+
 class UserF(Form):
     birthday     = IntegerField(u'Año de nacimiento', [validators.DataRequired()])
     level        = SelectField(u'Escolaridad', 
                             [validators.DataRequired()],
                         choices=[('prim',u'Primaria'),('sec',u'Secunadaria'),('prep',u'Prepa'),('uni',u'Universidad'),('pos',u'Posgrado')])
+    genero       = SelectField(u'Género',
+                            [validators.DataRequired()],
+                        choices=[('M',u'Masculino'),('F',u'Fememino')])
     previous_ex  = SelectField(u'Experiencia previa con robots',
                             [validators.DataRequired()],
                         choices=[('no',u'No'),('yes',u'Sí')])
@@ -92,8 +108,12 @@ def save_exps(EXPS):
         dump(dict([ (k,v) for k, v in EXPS.iteritems()]),expssf)
 
 def save_items(ANS):
-    with open(app.config['ANSWERS_ITEMS'],"w") as ansf:
+    with open(app.config['ANSWERS_FILE'],"w") as ansf:
         dump(ANS,ansf)
+
+def save_candidates(CNDS):
+    with open(app.config['CANDIDATES_FILE'],"w") as canf:
+        dump(CNDS,canf)
 
 
 # Loading users
@@ -106,8 +126,16 @@ with open(app.config['EXPERIMENTS_FILE']) as expsf:
 
 # Loading answers
 with open(app.config['ANSWERS_FILE']) as ansf:
-    ANS = dict([ (k,v) for k, v in load(ansf).iteritems()])
+    ANS = load(ansf)
 
+# Loading candidates
+with open(app.config['CANDIDATES_FILE']) as canf:
+    CNDS = load(canf)
+
+# Loading admins
+with open(app.config['ADMINS_FILE']) as admf:
+    ADMS = load(admf)
+    ADMS_ = dict([ (id,User(id)) for id,pw in ADMS])
 
 # Managin login
 @login_manager.user_loader
@@ -116,15 +144,46 @@ def load_user(userid):
         return USERS[userid]
     except KeyError:
         return None
+
+@login_manager.user_loader
+def load_admin(id):
+    try:
+        return ADMS_[id]
+    except KeyError:
+        return None
         
+
+# Managing Administradores
+@app.route("/login", methods=["GET", "POST"])
+def login_admin():
+    form = LoginF()
+    if form.validate_on_submit():
+        user=[ i for i,(x,y) in enumerate(ADMS) if x==form.admin.data 
+                                               and y==form.password.data]
+        if len(user)==1:
+            login_user(load_admin(form.admin.data))
+            return redirect("/dashboard")
+        else:
+            flash('Problema con entrada')
+            return redirect("/")
+    return render_template("login.html", form=form)
+
+
+@app.route("/logout")
+@login_required
+def logout():
+    logout_user()
+    return redirect("/")
 
 # Managing dashboard
 @app.route("/dashboard")
+@login_required
 def dashboard():
     return render_template('adminindex.html')
 
 # Managing users
 @app.route("/dashboard/create/user")
+@login_required
 def user_new():
     u=uuid.uuid4()
     userid=str(u)
@@ -138,6 +197,7 @@ def user_new():
 
 # Managing experiments
 @app.route("/dashboard/create/experiment", methods=['GET','POST'])
+@login_required
 def experiment_new():
     form=ExperimentF(request.form)
     if form.cancel.data:
@@ -162,6 +222,7 @@ def experiment_new():
 
 
 @app.route("/dashboard/edit/experiment/<expid>", methods=['GET','POST'])
+@login_required
 def experiment_edit(expid):
     if not EXPS.has_key(expid):
         return render_template('error.html',message="Experimento no definido")
@@ -186,6 +247,7 @@ def experiment_edit(expid):
 
 
 @app.route("/dashboard/invite/user/<userid>")
+@login_required
 def user_invite_userid(userid):
     project = request.cookies.get('project')
     if not project:
@@ -204,6 +266,7 @@ def user_invite_userid(userid):
 
 
 @app.route("/dashboard/invite/user", methods=['GET','POST'])
+@login_required
 def user_invite():
     project = request.cookies.get('project')
     if not project:
@@ -226,6 +289,7 @@ def user_invite():
         return render_template('email_edit.html',form=form)
 
 @app.route("/confirm/<userid>", methods=['GET','POST'])
+@login_required
 def user_cofirmation(userid):
     try:
         if USERS[userid]['info']['confirmed']:
@@ -241,23 +305,22 @@ def user_cofirmation(userid):
         USERS[userid]['info']['birthday']=form.birthday.data
         USERS[userid]['info']['level']=form.level.data
         USERS[userid]['info']['prev']=form.previous_ex.data
+        USERS[userid]['info']['gender']=form.genero.data
         save_users(USERS)
 
         return redirect('/'+userid)
     else:
         return render_template('user_info_edit.html',form=form,userid=userid)
 
-
-
-
-
 @app.route("/dashboard/info/experiment/<expid>")
+@login_required
 def experiment_info(expid):
     if not EXPS.has_key(expid):
         return render_template('error.html',message="Experimento no definido")
     return render_template('experiment_info.html',exp=EXPS[expid])
 
 @app.route("/dashboard/info/user/<expid>")
+@login_required
 def user_info(expid):
     if not USERS.has_key(expid):
         return render_template('error.html',message="Experimento no definido")
@@ -265,6 +328,7 @@ def user_info(expid):
 
 
 @app.route("/dashboard/delete/experiment/<expid>")
+@login_required
 def experiment_delete(expid):
     if not EXPS.has_key(expid):
         return render_template('error.html',message="Experimento no definido")
@@ -273,6 +337,7 @@ def experiment_delete(expid):
 
 
 @app.route("/dashboard/select/experiment/<expid>")
+@login_required
 def experiment_select(expid):
     if not EXPS.has_key(expid):
         return render_template('error.html',message="Experimento no definido")
@@ -282,6 +347,7 @@ def experiment_select(expid):
     return resp
 
 @app.route("/dashboard/cerrar/experiment")
+@login_required
 def experiment_close():
     resp = make_response(render_template('adminindex.html'))
     resp.set_cookie('project', "",expires=0)
@@ -291,19 +357,23 @@ def experiment_close():
 
 
 @app.route("/dashboard/list/experiment")
+@login_required
 def experiment_list():
     return render_template('experiments.html',exps=EXPS)
 
 @app.route("/dashboard/experiments.json")
+@login_required
 def experiment_json():
     return jsonify(EXPS)
 
 @app.route("/dashboard/users.json")
+@login_required
 def user_json():
     return jsonify(dict([(k,v['info']) for k,v in USERS.iteritems()]))
 
 
 @app.route("/dashboard/list/user")
+@login_required
 def user_list():
     return render_template('users.html',users=USERS)
 
@@ -311,6 +381,7 @@ def user_list():
 
 
 @app.route("/dashboard/clone/experiment/<expid>")
+@login_required
 def experiment_clone2(expid):
     u=uuid.uuid4()
     expid_=str(u)
@@ -327,6 +398,7 @@ def experiment_clone2(expid):
     return redirect('/dashboard/info/experiment/'+expid)
 
 @app.route("/dashboard/on/experiment/<expid>")
+@login_required
 def experiment_on(expid):
     EXPS[expid]['status']=True
     with open(app.config['EXPERIMENTS_FILE'],"w") as expsf:
@@ -335,6 +407,7 @@ def experiment_on(expid):
     return redirect('/dashboard/info/experiment/'+expid)
 
 @app.route("/dashboard/off/experiment/<expid>")
+@login_required
 def experiment_offf(expid):
     EXPS[expid]['status']=False
     save_exps(EXPS)
@@ -343,18 +416,15 @@ def experiment_offf(expid):
 
 
 @app.route("/dashboard/invite")
+@login_required
 def experiment_invite():
     return redirect(dashboard)
 
 @app.route("/dashboard/live/<expid>")
+@login_required
 def experiment_live():
     return redirect(dashboard)
 
-@app.route("/logout")
-def logout():
-    logout_user()
-    return redirect(url_for("user"))
- 
 
 # Managing experiments
 @app.route("/<iduser>")
@@ -369,17 +439,32 @@ def login(iduser):
     else:
         return redirect('/')
 
+
+@app.route("/",methods=['GET','POST'])
+def main():
+    form=UserInviteF(request.form)
+    if form.validate_on_submit():
+        u=uuid.uuid4()
+        userid=str(u)
+        CNDS[userid]={}
+        CNDS[userid]['email']=form.email.data
+        CNDS[userid]['confirmed']=False
+        save_candidates(CNDS)
+        return redirect('/')
+    else:
+        return render_template('index.html',form=form, active=True)
+
 @app.route("/api/poll/<expid>")
+@login_required
 def poll_json(expid):
     return jsonify(EXPS[expid]['content'])
 
 @app.route("/api/poll/<expid>/option",methods=['POST'])
+@login_required
 def push_json(expid):
     option = request.args.get('emotion', '')
     answer = request.args.get('answer', '')
     return "ok"
-
-
 
 # Managing experiments
 if __name__ == '__main__':

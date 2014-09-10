@@ -1,0 +1,49 @@
+{% extends "default.html" %}
+
+{% macro render_field(field) %}
+  <dt>{{ field.label }}
+  <dd>{{ field(**kwargs)|safe }}
+  {% if field.errors %}
+    <ul class=errors>
+    {% for error in field.errors %}
+      <li>{{ error }}</li>
+    {% endfor %}
+    </ul>
+  {% endif %}
+  </dd>
+{% endmacro %}
+
+
+
+{% block title %}Bienvenido{% endblock %}
+
+{% block content %}
+<h1>¡¡Bienvenido!!</h1> 
+
+<p>
+A la plataforma de experimentación del <a href="http://golem.iimas.unam.mx">Grupo Golem</a>
+</p>
+
+<p>
+Esta plataforma permite la realización de experimentos tipo encuestas con fines de investigación en el Grupo Golem.
+</p>
+
+<p>
+En este momento la única forma de participar en estos experimentos es a través de una invitación por los administradores. Si gustas aplicar registra tu correo para consideración. Si existe algún experimento próximo, nuestros administradores se podrán en contacto contigo pronto.
+</p>
+
+<form action="/" method="POST" accept-charset="utf-8" enctype="multipart/form-data">
+    {{ form.csrf_token }}
+    {{ render_field(form.email)}}
+	{{ form.save() }}
+</form>
+
+<p>
+Tu identidad no es importante para estos experimentos, por lo que no pedimos datos sobre esta, pero si generales. Tu correo sólo lo útilizamos para invitarte a participar en nuestros experimentos. Una invitación te llegará a tu correo y tú puedes decidir si quieres participar o no.
+</p>
+
+
+
+{%endblock%}
+
+

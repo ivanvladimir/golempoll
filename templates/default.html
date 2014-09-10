@@ -38,19 +38,21 @@
       </li>
       <li class="toggle-topbar menu-icon"><a href="#"><span>menu</span></a></li>
     </ul>
- 
-    <section class="top-bar-section">
-       
-      <ul class="right">
-        <li class="divider"></li>
-        <li class="has-dropdown">
-          <a href="#">Experimentos</a>
-          <ul class="dropdown">
-            <li><a href="#">Listar experimentos</a></li>
-          </ul>
-        </li>
-      </ul>
-	</section>
+
+	{% if not active %}
+		<section class="top-bar-section">
+		   
+		  <ul class="right">
+			<li class="divider"></li>
+			<li class="has-dropdown">
+			  <a href="#">Experimentos</a>
+			  <ul class="dropdown">
+				<li><a href="#">Listar experimentos</a></li>
+			  </ul>
+			</li>
+		  </ul>
+		</section>
+	{% endif %}
   </nav>
 
 
