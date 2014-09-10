@@ -35,6 +35,7 @@ from flask import (
 from flask.ext.login import (
     LoginManager,
     login_user,
+    current_user,
     logout_user,
     login_required)
 from flask.ext.triangle import Triangle
@@ -107,7 +108,7 @@ def save_exps(EXPS):
     with open(app.config['EXPERIMENTS_FILE'],"w") as expssf:
         dump(dict([ (k,v) for k, v in EXPS.iteritems()]),expssf)
 
-def save_items(ANS):
+def save_answers(ANS):
     with open(app.config['ANSWERS_FILE'],"w") as ansf:
         dump(ANS,ansf)
 
@@ -141,17 +142,13 @@ with open(app.config['ADMINS_FILE']) as admf:
 @login_manager.user_loader
 def load_user(userid):
     try:
-        return USERS[userid]
+        return USERS[userid]['user']
+    except KeyError:
+      return ADMS_[id]
     except KeyError:
         return None
 
-@login_manager.user_loader
-def load_admin(id):
-    try:
-        return ADMS_[id]
-    except KeyError:
-        return None
-        
+       
 
 # Managing Administradores
 @app.route("/login", methods=["GET", "POST"])
@@ -161,7 +158,7 @@ def login_admin():
         user=[ i for i,(x,y) in enumerate(ADMS) if x==form.admin.data 
                                                and y==form.password.data]
         if len(user)==1:
-            login_user(load_admin(form.admin.data))
+            login_user(load_user(form.admin.data))
             return redirect("/dashboard")
         else:
             flash('Problema con entrada')
@@ -207,6 +204,8 @@ def experiment_new():
         expid=str(u)
         EXPS[expid]={}
         EXPS[expid]['content']=load(form.content.data)
+        EXPS[expid]['instructions']=load(form.instructions.data)
+        EXPS[expid]['invitation']=load(form.invitation.data)
         EXPS[expid]['name']=form.name.data
         EXPS[expid]['description']=form.description.data
         EXPS[expid]['date_creation']=time.time()
@@ -232,6 +231,8 @@ def experiment_edit(expid):
     if form.validate_on_submit():
         EXPS[expid]['content']=load(form.content.data)
         EXPS[expid]['name']=form.name.data
+        EXPS[expid]['instructions']=load(form.instructions.data)
+        EXPS[expid]['invitation']=load(form.invitation.data)
         EXPS[expid]['description']=form.description.data
         EXPS[expid]['date_modification']=time.time()
         EXPS[expid]['status']=False
@@ -367,13 +368,11 @@ def experiment_json():
     return jsonify(EXPS)
 
 @app.route("/dashboard/users.json")
-@login_required
 def user_json():
     return jsonify(dict([(k,v['info']) for k,v in USERS.iteritems()]))
 
 
 @app.route("/dashboard/list/user")
-@login_required
 def user_list():
     return render_template('users.html',users=USERS)
 
@@ -426,18 +425,10 @@ def experiment_live():
     return redirect(dashboard)
 
 
-# Managing experiments
-@app.route("/<iduser>")
-def login(iduser):
-    user=load_user(iduser)
-
-    if user:
-        login_user(user['user'])
-        resp = make_response(render_template('poll.html'))
-        resp.set_cookie('running_exp', user['info']['experiments'][0])
-        return resp
-    else:
-        return redirect('/')
+@app.route("/poll")
+@login_required
+def poll():
+    return render_template('poll.html'),
 
 
 @app.route("/",methods=['GET','POST'])
@@ -455,16 +446,41 @@ def main():
         return render_template('index.html',form=form, active=True)
 
 @app.route("/api/poll/<expid>")
-@login_required
 def poll_json(expid):
     return jsonify(EXPS[expid]['content'])
 
 @app.route("/api/poll/<expid>/option",methods=['POST'])
-@login_required
 def push_json(expid):
     option = request.args.get('emotion', '')
     answer = request.args.get('answer', '')
-    return "ok"
+    try:
+        ANS[expid].append((option,answer))
+    except KeyError:
+        ANS[expid]=[(option,answer)]
+
+@app.route("/finish")
+@login_required
+def finish_poll():
+    save_answers(ANS)
+    USERS[current_user.get_id()]['info']['experiments'].pop(0)
+    return redirect('/')
+
+# Managing experiments
+@app.route("/<iduser>")
+def login(iduser):
+    if  not len(USERS[iduser]['info']['experiments'])>0:
+        return render_template('error.html',message="Lo sentimos no hay ningun experimento asignado")
+    user=load_user(iduser)
+    if user:
+        login_user(user)
+        resp = make_response(render_template('poll_prev.html',
+                        instructions=EXPS[USERS[user.get_id()]['info']['experiments'][0]]['instructions']) )
+        resp.set_cookie('running_exp', USERS[user.get_id()]['info']['experiments'][0])
+        return resp
+    else:
+        return redirect('/')
+
+
 
 # Managing experiments
 if __name__ == '__main__':

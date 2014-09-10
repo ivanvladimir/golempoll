@@ -70,7 +70,7 @@ experimentApp.controller('CookieController', ['$scope','$cookies', function($sco
 	}]);
 
 
-experimentApp.controller('GolemPollController', function ($scope, $cookies, golemPollService) {
+experimentApp.controller('GolemPollController', function ($scope, $window, $cookies, golemPollService) {
 	$scope.poll = {};
 	golemPollService.getData('poll', $cookies.running_exp).then(function (data) {
 		$scope.poll = data;
@@ -113,10 +113,14 @@ experimentApp.controller('GolemPollController', function ($scope, $cookies, gole
 			},
 			function (error) {
 			});
-
+		
 		$scope.current+=1;
-		$scope.mainImage=$scope.poll.media.files[$scope.questions[$scope.current]];
-		$scope.options=shuffle($scope.options);
+		if($scope.current>=$scope.poll.media.files.length){
+			$window.location='/finish';
+		}else{
+			$scope.mainImage=$scope.poll.media.files[$scope.questions[$scope.current]];
+			$scope.options=shuffle($scope.options);
+		}
 	};
  
 });

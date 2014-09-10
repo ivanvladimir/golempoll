@@ -26,6 +26,8 @@ Experimento, prueba
     {{ render_field(form.name,size=20)}}
     {{ render_field(form.description,size=20) }}
 	{{ render_field(form.content,rows=24,cols=24)}}
+	{{ render_field(form.instructions,rows=12,cols=24)}}
+	{{ render_field(form.invitation,rows=12,cols=24)}}
 	{{ form.save() }} {{form.cancel()}} 
 </form>
 
