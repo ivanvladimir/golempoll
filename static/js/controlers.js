@@ -81,8 +81,8 @@ experimentApp.controller('GolemPollController', function ($scope, $window, $cook
 			questions.push(option);
 			option+=1;
 		};
-        option=0;
-		for (var tmp_ in data.options.labels) {
+		option=0;
+		for (var tmp_ in data.media.keys) {
 			options.push(option);
 			option+=1;
 		};
@@ -107,18 +107,25 @@ experimentApp.controller('GolemPollController', function ($scope, $window, $cook
 	};
 
 	$scope.next = function(chosen) {
-		var ans=$scope.poll.options.keys[chosen];
+		if($scope.poll.media.control=="random"){
+			var ans=$scope.poll.options.keys[chosen];
+		}else{
+			var ans=chosen;
+			$scope.option="";
+		}
 		var opt=$scope.poll.media.keys[$scope.questions[$scope.current]];
-		golemPollService.postData($cookies.running_exp, {emotion: opt, answer: ans}).then(function (data) {
+		var end_time=new Date() - start_time;
+		golemPollService.postData($cookies.running_exp, {emotion: opt, answer: ans, time: end_time}).then(function (data) {
 			},
 			function (error) {
 			});
-		
+	
 		$scope.current+=1;
 		if($scope.current>=$scope.poll.media.files.length){
 			$window.location='/finish';
 		}else{
 			$scope.mainImage=$scope.poll.media.files[$scope.questions[$scope.current]];
+			start_time=new Date();	
 			$scope.options=shuffle($scope.options);
 		}
 	};

@@ -6,15 +6,35 @@
 {% block title %}Experimento{% endblock %}
 
 {% block content %}
+	<script>
+		var start_time = new Date();
+	</script>
+
 	<div class="row" ng-controller="GolemPollController">
     	<div class="large-6 columns">
 			<img ng-src="{{mainImage | angular}}" >
 		</div>
+		<div ng-if="poll.media.control== 'random'">
 		<div ng-repeat="option in options">
 		<div class="large-5 columns" >
   				<a href="#" class="button expand" ng-click="next(option)" >{% raw %}{{poll.options.labels[option] }}{% endraw %}</a>
 		</div>
 		</div>
+		</div>
+		<div ng-if="poll.media.control== 'input'">
+		<div class="large-5 columns" >
+			<br/>
+			<br/>
+			<br/>
+			<br/>
+			<br/>
+			<br/>
+			<br/>
+			<input  type="text" name="option" ng-model="option" ng-required=""/>
+			<a href="#"  class="button tiny" ng-click="next(option)">Siguiente</a>
+		</div>
+		</div>
+
 
 
 {%endblock%}

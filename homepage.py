@@ -204,8 +204,8 @@ def experiment_new():
         expid=str(u)
         EXPS[expid]={}
         EXPS[expid]['content']=load(form.content.data)
-        EXPS[expid]['instructions']=load(form.instructions.data)
-        EXPS[expid]['invitation']=load(form.invitation.data)
+        EXPS[expid]['instructions']=form.instructions.data
+        EXPS[expid]['invitation']=form.invitation.data
         EXPS[expid]['name']=form.name.data
         EXPS[expid]['description']=form.description.data
         EXPS[expid]['date_creation']=time.time()
@@ -231,8 +231,8 @@ def experiment_edit(expid):
     if form.validate_on_submit():
         EXPS[expid]['content']=load(form.content.data)
         EXPS[expid]['name']=form.name.data
-        EXPS[expid]['instructions']=load(form.instructions.data)
-        EXPS[expid]['invitation']=load(form.invitation.data)
+        EXPS[expid]['instructions']=form.instructions.data
+        EXPS[expid]['invitation']=form.invitation.data
         EXPS[expid]['description']=form.description.data
         EXPS[expid]['date_modification']=time.time()
         EXPS[expid]['status']=False
@@ -241,6 +241,8 @@ def experiment_edit(expid):
     else:
         form.content.data=dump(EXPS[expid]['content'])
         form.name.data=EXPS[expid]['name']
+        form.instructions.data=EXPS[expid]['instructions']      
+        form.invitation.data=EXPS[expid]['invitation']        
         form.description.data=EXPS[expid]['description']
         return render_template('experiment_edit.html',
                 form=form,type='edit',expid=expid)
@@ -320,6 +322,17 @@ def experiment_info(expid):
         return render_template('error.html',message="Experimento no definido")
     return render_template('experiment_info.html',exp=EXPS[expid])
 
+
+@app.route("/dashboard/test/experiment/<expid>")
+@login_required
+def experiment_test(expid):
+    if not EXPS.has_key(expid):
+        return render_template('error.html',message="Experimento no definido")
+    resp = make_response(render_template('poll_prev.html',
+                        instructions=EXPS[expid]['instructions']) )
+    resp.set_cookie('running_exp',expid)
+    return resp
+
 @app.route("/dashboard/info/user/<expid>")
 @login_required
 def user_info(expid):
@@ -334,6 +347,7 @@ def experiment_delete(expid):
     if not EXPS.has_key(expid):
         return render_template('error.html',message="Experimento no definido")
     del EXPS[expid]
+    save_exps(EXPS)
     return redirect('/dashboard')
 
 
@@ -388,6 +402,8 @@ def experiment_clone2(expid):
     EXPS[expid_]['content']= EXPS[expid]['content']
     EXPS[expid_]['name']=EXPS[expid]['name']
     EXPS[expid_]['description']= EXPS[expid]['description']
+    EXPS[expid_]['instructions']=EXPS[expid]['instructions']
+    EXPS[expid_]['invitation']=EXPS[expid]['invitation']
     EXPS[expid_]['date_creation']=time.time()
     EXPS[expid_]['date_modification']=time.time()
     EXPS[expid]['status']=False
@@ -425,6 +441,16 @@ def experiment_live():
     return redirect(dashboard)
 
 
+@app.route("/poll/<expid>")
+@login_required
+def poll_(expid):
+    resp = make_response(render_template('poll_prev.html',
+                        instructions=EXPS[USERS[current_user.get_id()]['info']['experiments'][0]]['instructions']) )
+    resp.set_cookie('running_exp', expid)
+    return resp
+
+
+
 @app.route("/poll")
 @login_required
 def poll():
@@ -433,17 +459,23 @@ def poll():
 
 @app.route("/",methods=['GET','POST'])
 def main():
-    form=UserInviteF(request.form)
-    if form.validate_on_submit():
-        u=uuid.uuid4()
-        userid=str(u)
-        CNDS[userid]={}
-        CNDS[userid]['email']=form.email.data
-        CNDS[userid]['confirmed']=False
-        save_candidates(CNDS)
-        return redirect('/')
+    if not current_user.is_authenticated():
+        form=UserInviteF(request.form)
+        if form.validate_on_submit():
+            u=uuid.uuid4()
+            userid=str(u)
+            CNDS[userid]={}
+            CNDS[userid]['email']=form.email.data
+            CNDS[userid]['confirmed']=False
+            save_candidates(CNDS)
+            return redirect('/')
+        else:
+            return render_template('index.html',form=form, active=True)
     else:
-        return render_template('index.html',form=form, active=True)
+        return render_template('myexperiments.html',
+                projs=[ EXPS[expid] for expid in 
+                            USERS[current_user.get_id()]['info']['experiments']])
+
 
 @app.route("/api/poll/<expid>")
 def poll_json(expid):
@@ -453,30 +485,39 @@ def poll_json(expid):
 def push_json(expid):
     option = request.args.get('emotion', '')
     answer = request.args.get('answer', '')
-    try:
-        ANS[expid].append((option,answer))
-    except KeyError:
-        ANS[expid]=[(option,answer)]
+    time = request.args.get('time', 0)
+
+    if not ADMS_.has_key(current_user.get_id()):
+        try:
+            ANS[expid][-1].append((option,answer))
+        except KeyError:
+            ANS[expid]=[[(option,answer)]]
+        return jsonify({'status':'ok'})
+    else:
+        print "ANS:",option,answer,time
+        return jsonify({'status':'test'})
 
 @app.route("/finish")
 @login_required
 def finish_poll():
-    save_answers(ANS)
-    USERS[current_user.get_id()]['info']['experiments'].pop(0)
-    return redirect('/')
+    if not ADMS_.has_key(current_user.get_id()):
+        save_answers(ANS)
+        USERS[current_user.get_id()]['info']['experiments'].pop(0)
+        save_users(USERS)
+        return redirect('/')
+    else:
+        return redirect('/dashboard')
 
 # Managing experiments
 @app.route("/<iduser>")
 def login(iduser):
-    if  not len(USERS[iduser]['info']['experiments'])>0:
-        return render_template('error.html',message="Lo sentimos no hay ningun experimento asignado")
     user=load_user(iduser)
     if user:
         login_user(user)
-        resp = make_response(render_template('poll_prev.html',
-                        instructions=EXPS[USERS[user.get_id()]['info']['experiments'][0]]['instructions']) )
-        resp.set_cookie('running_exp', USERS[user.get_id()]['info']['experiments'][0])
-        return resp
+        return render_template('myexperiments.html',
+                projs=[ (expid,EXPS[expid]) for expid in 
+                            USERS[current_user.get_id()]['info']['experiments']])
+
     else:
         return redirect('/')
 
