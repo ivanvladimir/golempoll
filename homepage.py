@@ -39,6 +39,7 @@ from flask.ext.login import (
     logout_user,
     login_required)
 from flask.ext.triangle import Triangle
+from flask.ext.mail import Mail, Message
 from flask_wtf import Form
 from wtforms import (
     StringField, 
@@ -60,6 +61,7 @@ from User import User
 app = Flask('homepage')
 Triangle(app)
 app.config.from_pyfile('homepage.cfg')
+mail=Mail(app)
 
 login_manager = LoginManager()
 login_manager.init_app(app)
@@ -263,8 +265,14 @@ def user_invite_userid(userid):
         USERS[userid]['info']['experiments'].append(project)
     except KeyError:
         USERS[userid]['info']['experiments']=[project]
-        save_users(USERS)
-    USERS[userid]['info']['experiments']=[project]
+    save_users(USERS)
+    msg= Message(EXPS[project]['invitation'].format(
+        PROJ=EXPS[project]['name'],
+        URL="/confirm/"+userid,
+        URL_DEL="/delete/user/"+userid),
+        sender=app.config["SENDER_EMAIL"],
+        recipients=[USERS[userid]['info']['email']]
+    )
     return redirect('/dashboard/info/user/'+userid)
 
 
