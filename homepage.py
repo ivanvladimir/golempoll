@@ -161,10 +161,10 @@ def login_admin():
                                                and y==form.password.data]
         if len(user)==1:
             login_user(load_user(form.admin.data))
-            return redirect("/dashboard")
+            return redirect(url_for('dashboard'))
         else:
             flash('Problema con entrada')
-            return redirect("/")
+            return redirect(url_for('index'))
     return render_template("login.html", form=form)
 
 
@@ -172,7 +172,7 @@ def login_admin():
 @login_required
 def logout():
     logout_user()
-    return redirect("/")
+    return redirect(url_for('index'))
 
 # Managing dashboard
 @app.route("/dashboard")
@@ -239,7 +239,7 @@ def experiment_edit(expid):
         EXPS[expid]['date_modification']=time.time()
         EXPS[expid]['status']=False
         save_exps(EXPS)
-        return redirect('/dashboard/info/experiment/'+expid)
+        return redirect(url_for('experiment_info',expid=expid))
     else:
         form.content.data=dump(EXPS[expid]['content'])
         form.name.data=EXPS[expid]['name']
@@ -273,7 +273,7 @@ def user_invite_userid(userid):
         sender=app.config["SENDER_EMAIL"],
         recipients=[USERS[userid]['info']['email']]
     )
-    return redirect('/dashboard/info/user/'+userid)
+    return redirect(url_for('user_info',userid=userid))
 
 
 @app.route("/dashboard/invite/user", methods=['GET','POST'])
@@ -295,7 +295,7 @@ def user_invite():
         USERS[userid]['info']['email']=form.email.data
         USERS[userid]['user']=User(userid,[])
         save_users(USERS)
-        return redirect('/dashboard/info/user/'+userid)
+        return redirect(url_for('user_info',userid=userid))
     else:
         return render_template('email_edit.html',form=form)
 
@@ -310,7 +310,7 @@ def user_cofirmation(userid):
 
     form=UserF(request.form)
     if form.cancel.data:
-        return redirect(url_for(dashboard))
+        return redirect(url_for('dashboard'))
     if form.validate_on_submit():
         USERS[userid]['info']['confirmed']=True
         USERS[userid]['info']['birthday']=form.birthday.data
@@ -318,8 +318,7 @@ def user_cofirmation(userid):
         USERS[userid]['info']['prev']=form.previous_ex.data
         USERS[userid]['info']['gender']=form.genero.data
         save_users(USERS)
-
-        return redirect('/'+userid)
+        return redirect('login',userid=userid)
     else:
         return render_template('user_info_edit.html',form=form,userid=userid)
 
@@ -356,7 +355,7 @@ def experiment_delete(expid):
         return render_template('error.html',message="Experimento no definido")
     del EXPS[expid]
     save_exps(EXPS)
-    return redirect('/dashboard')
+    return redirect(url_for('dashboard'))
 
 
 @app.route("/dashboard/select/experiment/<expid>")
@@ -417,8 +416,8 @@ def experiment_clone2(expid):
     EXPS[expid]['status']=False
 
     save_exps(EXPS)
+    return redirect(url_for('experiment_info',expid=expid))
 
-    return redirect('/dashboard/info/experiment/'+expid)
 
 @app.route("/dashboard/on/experiment/<expid>")
 @login_required
@@ -426,27 +425,25 @@ def experiment_on(expid):
     EXPS[expid]['status']=True
     with open(app.config['EXPERIMENTS_FILE'],"w") as expsf:
         dump(dict([ (k,v) for k, v in EXPS.iteritems()]),expsf)
-
-    return redirect('/dashboard/info/experiment/'+expid)
+    return redirect(url_for('experiment_info',expid=expid))
 
 @app.route("/dashboard/off/experiment/<expid>")
 @login_required
 def experiment_offf(expid):
     EXPS[expid]['status']=False
     save_exps(EXPS)
-
-    return redirect('/dashboard/info/experiment/'+expid)
+    return redirect(url_for('experiment_info',expid=expid))
 
 
 @app.route("/dashboard/invite")
 @login_required
 def experiment_invite():
-    return redirect(dashboard)
+    return redirect(url_for('dashboard'))
 
 @app.route("/dashboard/live/<expid>")
 @login_required
 def experiment_live():
-    return redirect(dashboard)
+    return redirect(url_for('dashboard'))
 
 
 @app.route("/poll/<expid>")
@@ -458,7 +455,6 @@ def poll_(expid):
     return resp
 
 
-
 @app.route("/poll")
 @login_required
 def poll():
@@ -466,7 +462,7 @@ def poll():
 
 
 @app.route("/",methods=['GET','POST'])
-def main():
+def index():
     if not current_user.is_authenticated():
         form=UserInviteF(request.form)
         if form.validate_on_submit():
@@ -476,7 +472,7 @@ def main():
             CNDS[userid]['email']=form.email.data
             CNDS[userid]['confirmed']=False
             save_candidates(CNDS)
-            return redirect('/')
+            return redirect(url_for('index'))
         else:
             return render_template('index.html',form=form, active=True)
     else:
@@ -512,9 +508,9 @@ def finish_poll():
         save_answers(ANS)
         USERS[current_user.get_id()]['info']['experiments'].pop(0)
         save_users(USERS)
-        return redirect('/')
+        return redirect(url_for('index'))
     else:
-        return redirect('/dashboard')
+        return redirect(url_for('dashboard'))
 
 # Managing experiments
 @app.route("/<iduser>")
@@ -527,7 +523,7 @@ def login(iduser):
                             USERS[current_user.get_id()]['info']['experiments']])
 
     else:
-        return redirect('/')
+        return redirect(url_for('index'))
 
 
 
