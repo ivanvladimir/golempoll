@@ -1,0 +1,43 @@
+{% extends "default.html" %}
+
+{% block scripts %}
+{% endblock %}
+
+{% block title %}Dashboard: Encuentas pendientes {% endblock %}
+
+{% block content %}
+
+<h1>
+¡Bienvenido!
+</h1>
+{% if projs %}
+<p>
+Los sisguientes son los experimentos en los que desamos que nos apoyes, puedes escojer declinar la invitación o contestarlos.
+</p>
+<table>
+	<thead>
+		<tr>
+			<th>Nombre</th>
+			<th>Acciones</th>
+		</tr>
+	</thead>
+	<tbody>
+		<tr>
+		{% for expid,proj in projs %}
+			<td>{{proj.description}}</td>
+			<td><a href="/del/{{loop.index}}" class="button tiny alert">Declinar</a>
+				<a href="/poll/{{expid }}" class="button tiny">Contestar</a>
+			</td>
+		{% endfor %}
+		</tr>
+	</tbody>
+</table>
+{% else %}
+<p>
+¡Muchas gracias! En este momento no tenemos un experimento para ti.
+</p>
+{% endif  %}
+
+{%endblock%}
+
+
