@@ -16,7 +16,6 @@ Experimentos
 	</div>
 </div>
 <table ng-controller="ExperimentListCtrl" ng-table="tableParams" class="table">
-
 	<tr ng-repeat="exp in exps | filter:query">
 			<td data-title="'Activar'">
 				<a href="/dashboard/{{'{{exp.status | switch}}'}}/experiment/{{exp.expid | angular}}">

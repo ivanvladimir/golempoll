@@ -157,8 +157,9 @@ def load_user(userid):
 def login_admin():
     form = LoginF()
     if form.validate_on_submit():
+        print ">>>>",ADMS
         user=[ i for i,(x,y) in enumerate(ADMS) if x==form.admin.data 
-                                               and y==form.password.data]
+                                               and str(y)==form.password.data]
         if len(user)==1:
             login_user(load_user(form.admin.data))
             return redirect(url_for('dashboard'))
@@ -195,6 +196,7 @@ def user_new():
     return render_template('user_created.html',userid=userid)
 
 # Managing experiments
+@app.route("/dashboard/create/experiment/", methods=['GET','POST'])
 @app.route("/dashboard/create/experiment", methods=['GET','POST'])
 @login_required
 def experiment_new():
@@ -381,6 +383,7 @@ def experiment_close():
 @app.route("/dashboard/list/experiment")
 @login_required
 def experiment_list():
+    print EXPS
     return render_template('experiments.html',exps=EXPS)
 
 @app.route("/dashboard/experiments.json")
