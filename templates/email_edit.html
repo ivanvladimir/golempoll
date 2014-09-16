@@ -21,7 +21,7 @@
 Experimento, prueba
 </h1>
 
-<form action="/dashboard/invite/user" method="POST" accept-charset="utf-8" enctype="multipart/form-data">
+<form action={{url_for("user_invite")}} method="POST" accept-charset="utf-8" enctype="multipart/form-data">
     {{ form.csrf_token }}
     {{ render_field(form.email)}}
 	{{ form.save() }} {{form.cancel()}} 

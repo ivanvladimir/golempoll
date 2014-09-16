@@ -20,8 +20,11 @@
 <h1>
 Definición de experimento
 </h1>
-
-<form action="/dashboard/{{type}}/experiment/{{expid}}" method="POST" accept-charset="utf-8" enctype="multipart/form-data">
+{% if type="new" %}
+<form action=""{{url_for('experiment_new')}}" method="POST" accept-charset="utf-8" enctype="multipart/form-data">
+{% else %}
+<form action=""{{url_for('experiment_edit',expid=expid)}}" method="POST" accept-charset="utf-8" enctype="multipart/form-data">
+{% endif %}
     {{ form.csrf_token }}
     {{ render_field(form.name,size=20)}}
     {{ render_field(form.description,size=20) }}
