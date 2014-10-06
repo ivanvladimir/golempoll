@@ -52,7 +52,7 @@ manager = APIManager(app, session=db_session)
 api_experiment=manager.create_api_blueprint(
     Experiment,methods=['GET'],
     collection_name='experiment',
-    include_columns=['status','id','name', 'description','date_creation','date_modification']
+    include_columns=['status','id','name','description','date_creation','date_modification','experiments']
 )
 app.register_blueprint(api_experiment,url_prefix='/api')
 api_user=manager.create_api_blueprint(

@@ -20,7 +20,7 @@
 #    along with this program.  if not, see <http://www.gnu.org/licenses/>.
 # -------------------------------------------------------------------------
 
-from sqlalchemy import Column, Integer, String, Boolean, Enum, DateTime
+from sqlalchemy import relationship,Column, Integer, String, Boolean, Enum,DateTime, Table, ForeignKey
 from flask.ext.login import make_secure_token
 from flask.ext.bcrypt import Bcrypt
 from database import Base
@@ -66,6 +66,7 @@ class User(Base):
     level         = Column(Enum('prim', 'sec','prep','uni','pos'))
     previous      = Column(Enum('yes', 'no'))
     gender        = Column(Enum('M', 'F'))
+    experiments   = relationship('ExperimentUser', backref='experimentee', lazy='dynamic')
 
     def __init__(self, userid):
         self.userid  = userid
@@ -92,22 +93,16 @@ class Experiment(Base):
     instructions  = Column(String,nullable=False)
     invitation    = Column(String,nullable=False)
     status        = Column(Boolean,default=True)
+    users         = relationship('ExperimentUser', backref='experiment', lazy='dynamic')
     
     def __init__(self):
         self.date_creation=datetime.now()
         self.date_modification=datetime.now()
 
 
-class ExperimentUser(Base):
-    __tablename__ = 'experiment_users'
-    id_user       = Column(Integer, primary_key=True,nullable = False)
-    id_exp        = Column(Integer, primary_key=True,nullable = False)
-    accepted      = Column(Boolean, default=False)
-    finish        = Column(Boolean, default=False)
-    date_invited  = Column(DateTime, default=0)
-
-    def __init__(self,id_user,id_exp):
-        self.id_user=id_user
-        self.id_exp=id_exp
-        self.date_invited=datetime.now()
-   
+experiment_user =  Table('experiment_user',
+    Column('id_user',Integer,ForeignKey('users.id')),
+    Column('id_experiment',Integer,ForeignKey('experiments.id')),
+    Column('accepted',Boolean, default=False),
+    Column('finish',Boolean, default=False),
+    Column('date_invited',DateTime, default=0))
