@@ -16,6 +16,7 @@ Experimentos
 	</div>
 </div>
 <table ng-controller="ExperimentListCtrl" ng-table="tableParams" class="table">
+	{{ exps | angular }}
 	<tr ng-repeat="exp in exps | filter:query">
 			<td data-title="'Activar'">
 				<a href="/dashboard/{{'{{exp.status | switch}}'}}/experiment/{{exp.expid | angular}}">
@@ -30,21 +31,18 @@ Experimentos
             <td data-title="'Descripción'">
                 {{exp.description | angular }}
             </td> 
-			<td data-title="'Creación'" sortable="'date_creation_'">
-                {{exp.date_creation_ | angular }}
-            </td>
- 			<td data-title="'Modificación'" sortable="'date_modification_'" >
-                {{exp.date_modification_ | angular }}
+		    <td data-title="'Modificación'" sortable="'date_modification'" >
+                {{exp.date_modification | angular }}
             </td>
             <td data-title="'Acciones'">
-				<a href="/dashboard/info/experiment/{{exp.expid | angular}}" class="button tiny">Info</a>
-				<a href="/dashboard/test/experiment/{{exp.expid | angular}}" class="button tiny">Probar</a>
-				<a href="/dashboard/clone/experiment/{{exp.expid | angular}}" class="button tiny">Clonar</a>
-				<a href="/dashboard/edit/experiment/{{exp.expid | angular}}" class="button tiny">Editar</a>
-				<a href="/dashboard/delete/experiment/{{exp.expid | angular}}" class="button tiny alert">Borrar</a>
+				<a href="/dashboard/info/experiment/{{exp.id | angular}}" class="button tiny">Info</a>
+				<a href="/dashboard/test/experiment/{{exp.id | angular}}" class="button tiny">Probar</a>
+				<a href="/dashboard/clone/experiment/{{exp.id | angular}}" class="button tiny">Clonar</a>
+				<a href="/dashboard/edit/experiment/{{exp.id | angular}}" class="button tiny">Editar</a>
+				<a href="/dashboard/delete/experiment/{{exp.id | angular}}" class="button tiny alert">Borrar</a>
             </td>
-			<td data-title="'Activar'">
-				<a href="/dashboard/select/experiment/{{exp.expid | angular}}" class="button tiny">Sí</a>
+			<td data-title="'Seleccionar'">
+				<a href="/dashboard/select/experiment/{{exp.id | angular}}" class="button tiny">Sí</a>
             </td>
 
 	</tr>

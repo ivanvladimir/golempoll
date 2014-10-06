@@ -14,7 +14,7 @@ expFilters.filter('switch', function() {
 
 expFilters.filter('cookie_project', function() {
 	  return function(input) {
-		      return input ? input : "No experimento";
+		      return input ? input : "Sin experimento";
 	  };
 });
 

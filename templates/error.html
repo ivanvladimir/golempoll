@@ -1,9 +1,14 @@
-{% extends "default.html" %}
+{% extends "dashboard.html" %}
 {% block content %}
 <div id="center">
     <p>
-    ¡¡ Un error ha ocurrido, {{message}} !! 
+	<h2>
+    ¡¡ Un error ha ocurrido!! 
+	</h2>
     </p>
+	<p>
+	{{message}}
+	</p>
 
 </div>
 {% endblock %}

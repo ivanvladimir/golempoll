@@ -1,15 +1,8 @@
 var experimentApp = angular.module('experimentApp', ['ngTable','experimentFilters','ngCookies']);
 
-experimentApp.controller('ExperimentListCtrl', function ($scope,$http,$filter,ngTableParams) {
-  $http.get('/dashboard/experiments.json').success(function(data) {
-	var data_ = [];
-	for (var expid in data) {
-		data[expid].date_creation_=(new Date(data[expid].date_creation*1000)).toDateString();
-		data[expid].date_modification_=(new Date(data[expid].date_modification*1000)).toDateString();
-		data[expid].expid=expid;
-		data_.push(data[expid]);
-	};
-    $scope.exps = data_;
+experimentApp.controller('ExperimentUserListCtrl', function ($scope,$http,$filter,$attrs,ngTableParams) {
+    $http.get('/api/eu?q={"filters":[{"name":"id_user","op":"==","val":'+$attrs.userid+'}]}').success(function(data) {
+    $scope.exps = data.objects;
 
     $scope.tableParams = new ngTableParams({
         page: 1,            // show first page
@@ -20,7 +13,29 @@ experimentApp.controller('ExperimentListCtrl', function ($scope,$http,$filter,ng
     }, {
         total: $scope.exps.length, // length of data
         getData: function($defer, params) {
-            // use build-in angular filter
+            $scope.exps = params.sorting() ?
+                                $filter('orderBy')($scope.exps, params.orderBy()) :
+                                data;
+            $defer.resolve($scopes.exp.slice((params.page() - 1) * params.count(), params.page() * params.count()));
+        }
+    }); 
+	});
+});
+
+
+experimentApp.controller('ExperimentListCtrl', function ($scope,$http,$filter,ngTableParams) {
+  $http.get('/api/experiment').success(function(data) {
+    $scope.exps = data.objects;
+
+    $scope.tableParams = new ngTableParams({
+        page: 1,            // show first page
+        count: 10,          // count per page
+        sorting: {
+            name: 'asc'     // initial sorting
+        }
+    }, {
+        total: $scope.exps.length, // length of data
+        getData: function($defer, params) {
             $scope.exps = params.sorting() ?
                                 $filter('orderBy')($scope.exps, params.orderBy()) :
                                 data;
@@ -31,19 +46,10 @@ experimentApp.controller('ExperimentListCtrl', function ($scope,$http,$filter,ng
 });
 
 experimentApp.controller('UserListCtrl', function ($scope,$http,$filter,ngTableParams) {
-  $http.get('/dashboard/users.json').success(function(data) {
-	var data_=[]
+  $http.get('/api/user').success(function(data) {
 	var d = new Date();
-	var n = d.getFullYear(); 
-	for (var id in data) {
-		data[id].userid=id;
-		data[id].age=n-data[id].birthday;
-		if (typeof data[id].experiments != 'undefined'){
-			data[id].experiment=data[id].experiments[0]
-		}
-		data_.push(data[id]);
-	};
-    $scope.users = data_;
+    $scope.users = data.objects;
+	$scope.current_year = d.getFullYear();
 
     $scope.tableParams = new ngTableParams({
         page: 1,            // show first page
