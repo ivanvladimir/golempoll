@@ -12,7 +12,7 @@
 
 	<div class="row" ng-controller="GolemPollController">
     	<div class="large-6 columns">
-			<img ng-src="{{mainImage | angular}}" >
+			<img ng-src="{{mainImage | angular}}" resetTimer/>
 		</div>
 		<div ng-if="poll.media.control== 'random'">
 		<div ng-repeat="option in options">

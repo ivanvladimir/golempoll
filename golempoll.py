@@ -35,6 +35,7 @@ from flask.ext.login import (
 # Local import
 from dashboard import dashboardB
 from poll import pollB
+from api import apiB
 
 # Load database
 from database import db_session
@@ -46,19 +47,20 @@ from forms import LoginF
 app = Flask('homepage')
 app.register_blueprint(dashboardB,url_prefix='/dashboard')
 app.register_blueprint(pollB)
+app.register_blueprint(apiB,url_prefix='/api')
 
-# Adding RESTful api
+# Adding RESTful-Restless api
 manager = APIManager(app, session=db_session)
 api_experiment=manager.create_api_blueprint(
     Experiment,methods=['GET'],
     collection_name='experiment',
-    include_columns=['status','id','name','description','date_creation','date_modification','experiments']
+    include_columns=['status','id','name','description','date_creation','date_modification','users','definition']
 )
 app.register_blueprint(api_experiment,url_prefix='/api')
 api_user=manager.create_api_blueprint(
     User,methods=['GET'],
     collection_name='user',
-    include_columns=['accepted','confirmed','id','userid', 'email','gender','year_birthday']
+    include_columns=['accepted','confirmed','id','userid','email','gender','year_birthday','experiments']
 )
 app.register_blueprint(api_user,url_prefix='/api')
 api_experimentuser=manager.create_api_blueprint(
@@ -66,8 +68,6 @@ api_experimentuser=manager.create_api_blueprint(
     collection_name='eu',
 )
 app.register_blueprint(api_experimentuser,url_prefix='/api')
-
-
 
 
 Triangle(app)
@@ -93,7 +93,7 @@ def load_user(userid):
         user=User.query.filter(User.userid==userid).one()
     except :
         try:
-            user=Admin.query.filter(Admin.name==userid).one()
+            user=Admin.query.filter(Admin.id==userid).one()
         except:
             return None
     return user

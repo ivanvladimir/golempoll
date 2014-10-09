@@ -3,31 +3,44 @@
 {% block title %}Dashboard: Información de usuario - {% endblock %}
 
 {% block content %}
-
 <h1>
-Experimento, prueba
+Usuario
 </h1>
 
-<p>
-	Nombre      : {{ user.email }}       </br>
-	Confirmed   : {{ user.confirmed }} </br>
-	Accepted    : {{ user.accepted }}
-</p>
+
+<b>
+Correo
+</b>
+<div class="panel">
+	{{ user.email }} 
+</div>
+<b>
+Número de experimentos invitado a contestar
+</b>
+<div class="panel">
+	{{ user.experiments | length }} 
+</div>
+<b>
+Confirmado y estado
+</b>
+<div class="panel">
+{{ user.confirmed }} | {{ user.accepted }}
+</div>
 
 <table ng-controller="ExperimentUserListCtrl" userid="{{user.id}}" ng-table="tableParams" class="table">
 	<tr ng-repeat="exp in exps | filter:query">
-			<td data-title="'Accepted'">
+			<td data-title="'Acceptó'">
 			    {% raw %}
                 {{exp.accepted | checkmark  }}
 			    {% endraw %}
             </td>
-            <td data-title="'Project'" sortable="'project'">
-                {{exp.proj_id | angular }}
+            <td data-title="'Projecto'" sortable="'name'">
+                {{exp.name | angular }}
             </td> 
-			<td data-title="'Actions'">
-				<a href="/dashboard/info/experiment/{{exp.id_exp | angular}}" class="button tiny">info</a>
+			<td data-title="'Acciones'">
+				<a href="/dashboard/info/experiment/{{exp.id | angular}}" class="button tiny">info</a>
             </td>
-			<td data-title="'Finished'">
+			<td data-title="'Realizado'">
 			    {% raw %}
                 {{exp.finish | checkmark  }}
 			    {% endraw %}

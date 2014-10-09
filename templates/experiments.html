@@ -19,7 +19,7 @@ Experimentos
 	{{ exps | angular }}
 	<tr ng-repeat="exp in exps | filter:query">
 			<td data-title="'Activar'">
-				<a href="/dashboard/{{'{{exp.status | switch}}'}}/experiment/{{exp.expid | angular}}">
+				<a href="/dashboard/{{'{{exp.status | switch}}'}}/experiment/{{exp.id | angular}}">
 			    {% raw %}
                 {{exp.status | checkmark  }}
 			    {% endraw %}

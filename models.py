@@ -20,7 +20,8 @@
 #    along with this program.  if not, see <http://www.gnu.org/licenses/>.
 # -------------------------------------------------------------------------
 
-from sqlalchemy import relationship,Column, Integer, String, Boolean, Enum,DateTime, Table, ForeignKey
+from sqlalchemy import Column, Integer, String, Boolean, Enum, DateTime, ForeignKey
+from sqlalchemy.orm import relationship, backref
 from flask.ext.login import make_secure_token
 from flask.ext.bcrypt import Bcrypt
 from database import Base
@@ -30,6 +31,7 @@ from datetime import datetime
 bcrypt=Bcrypt()
 
 secret_key="change this for deployment"
+
 
 class Admin(Base):
     __tablename__ = 'admin'
@@ -52,7 +54,7 @@ class Admin(Base):
     def is_anonymous(self):
         return False
     def get_id(self):
-        return unicode(self.name)
+        return unicode(self.id)
 
 class User(Base):
     __tablename__ = 'users'
@@ -66,7 +68,8 @@ class User(Base):
     level         = Column(Enum('prim', 'sec','prep','uni','pos'))
     previous      = Column(Enum('yes', 'no'))
     gender        = Column(Enum('M', 'F'))
-    experiments   = relationship('ExperimentUser', backref='experimentee', lazy='dynamic')
+    experiments   = relationship('Experiment', backref='user', 
+                secondary='experiment_user')
 
     def __init__(self, userid):
         self.userid  = userid
@@ -79,8 +82,7 @@ class User(Base):
     def is_anonymous(self):
         return False
     def get_id(self):
-        return unicode(self.userid)
-
+        return unicode(self.id)
 
 class Experiment(Base):
     __tablename__ = 'experiments'
@@ -93,16 +95,24 @@ class Experiment(Base):
     instructions  = Column(String,nullable=False)
     invitation    = Column(String,nullable=False)
     status        = Column(Boolean,default=True)
-    users         = relationship('ExperimentUser', backref='experiment', lazy='dynamic')
+    users         = relationship('User', backref='experiment', 
+                secondary='experiment_user')
     
     def __init__(self):
         self.date_creation=datetime.now()
         self.date_modification=datetime.now()
 
 
-experiment_user =  Table('experiment_user',
-    Column('id_user',Integer,ForeignKey('users.id')),
-    Column('id_experiment',Integer,ForeignKey('experiments.id')),
-    Column('accepted',Boolean, default=False),
-    Column('finish',Boolean, default=False),
-    Column('date_invited',DateTime, default=0))
+class ExperimentUser(Base):
+    __tablename__ = 'experiment_user'
+    id_user       = Column(Integer, 
+            ForeignKey('users.id'),primary_key=True)
+    id_exp        = Column(Integer,
+            ForeignKey('experiments.id'), primary_key=True)
+    user          = relationship(User, backref=backref("exp_assoc"))
+    experiment    = relationship(Experiment, backref=backref("user_assoc"))
+    accepted      = Column(Boolean, default=False)
+    janswers      = Column(String)
+    finish        = Column(Boolean, default=False)
+    date_invited  = Column(DateTime)
+

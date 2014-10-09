@@ -1,0 +1,35 @@
+{% extends "dashboard.html" %}
+
+{% block title %}Dashboard: Información de usuario - {% endblock %}
+
+{% block content %}
+<h1>
+El usuario contestó
+</h1>
+
+<table>
+  <thead>
+  <tr>
+	<th width="200">Emoción</th>
+	<th width="200">Respuesta</th>
+	<th>Tiempo</th>
+  </tr>
+  </thead>
+  <tbody>
+{% for ans in result %}
+  <tr>
+	<td>{{ans.emotion}}</th>
+	<td>{{ans.answer}}</th>
+	<td>{{ans.delta}}</th>
+  </tr>
+{% endfor %}
+</tbody>
+</table>
+
+		<div class="row" >
+  				<a href="{{url_for('.experiment_info',expid=expid)}}" class="button right" >Continuar</a>
+		</div>
+	
+
+{%endblock%}
+

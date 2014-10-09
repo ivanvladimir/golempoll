@@ -1,8 +1,8 @@
 var experimentApp = angular.module('experimentApp', ['ngTable','experimentFilters','ngCookies']);
 
 experimentApp.controller('ExperimentUserListCtrl', function ($scope,$http,$filter,$attrs,ngTableParams) {
-    $http.get('/api/eu?q={"filters":[{"name":"id_user","op":"==","val":'+$attrs.userid+'}]}').success(function(data) {
-    $scope.exps = data.objects;
+    $http.get('/api/user/'+$attrs.userid).success(function(data) {
+    $scope.exps = data.experiments;
 
     $scope.tableParams = new ngTableParams({
         page: 1,            // show first page
@@ -21,6 +21,32 @@ experimentApp.controller('ExperimentUserListCtrl', function ($scope,$http,$filte
     }); 
 	});
 });
+
+experimentApp.controller('UserExperimentListCtrl', function ($scope,$http,$filter,$attrs,ngTableParams) {
+    $http.get('/api/experiment/'+$attrs.expid).success(function(data) {
+    $scope.users = data.users;
+	var d = new Date();
+	$scope.current_year = d.getFullYear();
+
+
+    $scope.tableParams = new ngTableParams({
+        page: 1,            // show first page
+        count: 10,          // count per page
+        sorting: {
+            name: 'asc'     // initial sorting
+        }
+    }, {
+        total: $scope.exps.length, // length of data
+        getData: function($defer, params) {
+            $scope.exps = params.sorting() ?
+                                $filter('orderBy')($scope.exps, params.orderBy()) :
+                                data;
+            $defer.resolve($scopes.exp.slice((params.page() - 1) * params.count(), params.page() * params.count()));
+        }
+    }); 
+	});
+});
+
 
 
 experimentApp.controller('ExperimentListCtrl', function ($scope,$http,$filter,ngTableParams) {
@@ -76,9 +102,8 @@ experimentApp.controller('CookieController', ['$scope','$cookies', function($sco
 	}]);
 
 
-experimentApp.controller('GolemPollController', function ($scope, $window, $cookies, golemPollService) {
-	$scope.poll = {};
-	golemPollService.getData('poll', $cookies.running_exp).then(function (data) {
+experimentApp.controller('GolemPollController', function ($scope, $http, $window, $cookies) {
+     $http.get('/api/definition/'+$cookies.running_exp).success(function(data) {
 		$scope.poll = data;
 		var questions=[];
 		var options=[];
@@ -96,22 +121,14 @@ experimentApp.controller('GolemPollController', function ($scope, $window, $cook
 		$scope.options=shuffle(options);
 		$scope.current=0;
 		$scope.mainImage=$scope.poll.media.files[$scope.questions[$scope.current]];
+		$scope.start_time=new Date();
+		$scope.answers=[];
 
 	},
 	function (error) {
 	}
 	);
  
-	$scope.save = function () {
-		if ($scope.poll.option) {
-			golemPollService.postData($routeParams.id, {option: $scope.poll.option}).then(function (data) {
-			},
-			function (error) {
-			});
-		} else {
-		}
-	};
-
 	$scope.next = function(chosen) {
 		if($scope.poll.media.control=="random"){
 			var ans=$scope.poll.options.keys[chosen];
@@ -120,19 +137,21 @@ experimentApp.controller('GolemPollController', function ($scope, $window, $cook
 			$scope.option="";
 		}
 		var opt=$scope.poll.media.keys[$scope.questions[$scope.current]];
-		var end_time=new Date() - start_time;
-		golemPollService.postData($cookies.running_exp, {emotion: opt, answer: ans, time: end_time}).then(function (data) {
-			},
-			function (error) {
-			});
-	
+		var delta_time=new Date()-$scope.start_time;
+		var info={'emotion': opt, 'answer': ans, 'delta': delta_time};
+		$scope.answers.push(info);
 		$scope.current+=1;
 		if($scope.current>=$scope.poll.media.files.length){
-			$window.location='/finish';
+			if($cookies.running_user!=undefined){
+			 	$http.put('/api/definition/'+$cookies.running_exp+'/'+$cookies.running_user,{answers:$scope.answers});
+			 	$window.location='/finish';
+			 }else{
+			 	$window.location='/dashboard/result/'+angular.toJson($scope.answers);
+			}
 		}else{
-			$scope.mainImage=$scope.poll.media.files[$scope.questions[$scope.current]];
-			start_time=new Date();	
 			$scope.options=shuffle($scope.options);
+			$scope.mainImage=$scope.poll.media.files[$scope.questions[$scope.current]];
+			$scope.start_time=new Date();
 		}
 	};
  
