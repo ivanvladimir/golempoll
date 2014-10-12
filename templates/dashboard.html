@@ -36,7 +36,7 @@
           </a>
         </h1>
       </li>
-    </ul>
+	     </ul>
  
     <section class="top-bar-section">
       <ul class="right">
@@ -48,7 +48,14 @@
 			{% endraw %}
 		  </a>
 	      <ul class="dropdown">
-            <li><a href="/dashboard/cerrar/experiment">Cerrar</a></li>
+            <li><a href="{{url_for('.experiment_close')}}">Cerrar</a></li>
+			 {% if recent %}
+      		<li class="divider"></li>
+	  		{% endif %}
+	  		{% for id,name in recent %}
+            <li><a href="{{url_for('.experiment_select',expid=id)}}">{{name}}</a></li>
+	  		{% endfor %}
+
           </ul>
  	
         </li>
@@ -56,23 +63,23 @@
         <li class="has-dropdown">
           <a href="#">Experimentos</a>
           <ul class="dropdown">
-            <li><a href="/dashboard/list/experiment">Listar experimentos</a></li>
+            <li><a href="{{url_for('.experiment_list')}}">Listar</a></li>
             <li class="divider"></li>
-            <li><a href="/dashboard/create/experiment">Crear experimento</a></li>
+            <li><a href="{{url_for('.experiment_new')}}">Crear</a></li>
           </ul>
         </li>
         <li class="divider"></li>
         <li class="has-dropdown">
           <a href="#">Usuarios</a>
           <ul class="dropdown">
-            <li><a href="/dashboard/list/user">Listar usuarios</a></li>
+            <li><a href="{{url_for('.user_list')}}">Listar</a></li>
             <li class="divider"></li>
-            <li><a href="/dashboard/invite/user">Invitar usuario</a></li>
+            <li><a href="{{url_for('.user_invite')}}">Invitar usuario</a></li>
           </ul>
         </li>
  		<li class="divider"></li>
         <li>
-          <a href="/logout">Salir</a>
+          <a href="{{url_for('logout')}}">Salir</a>
 		</li>
         </li>
       </ul>
@@ -92,7 +99,7 @@
       <hr/>
       <div class="row">
         <div class="large-6 columns">
-          <p>© Copyright 2014 Ivan Vladimir Meza Ruiz </p>
+          <p><small>© Copyright 2014 Ivan Vladimir Meza Ruiz</small></p>
         </div>
         <div class="large-6 columns">
           <ul class="inline-list right">

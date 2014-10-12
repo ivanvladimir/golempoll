@@ -25,12 +25,13 @@
 from flask import (
     Blueprint,
     jsonify,
-    request
+    request,
+    make_response
     )
 from flask.ext.login import login_required
-from json import loads, dumps
+from json import loads
 from yaml import load
-
+from datetime import datetime
 # Local import
 from database import db_session
 from models import ExperimentUser, Experiment
@@ -90,4 +91,28 @@ def answers(expid):
 
     return jsonify({'raw':answer,'confusion':ans_,'rawcounts':ans__
             })
- 
+
+@apiB.route("/download/<int:expid>/<fs>")
+@login_required
+def download(expid,fs):
+    exps=ExperimentUser.query.filter(ExperimentUser.id_exp==expid).all()
+    filename=exps[0].experiment.name+".csv"
+    keepcharacters = (' ','.','_')
+    filename=    "".join(c for c in filename if c.isalnum() or c in
+        keepcharacters).rstrip()
+    body=[]
+    for line in exps:
+        if line.janswers:
+            user=line.user
+            date_invited= datetime.strptime(str(line.date_invited),'%Y-%m-%d %H:%M:%S.%f').year
+            data=[user.gender,user.level,user.previous,str(date_invited-user.year_birthday)]
+            answers=loads(line.janswers)
+            for ans in answers:
+                data_=[x for x in data]
+                data_.append(ans['emotion'])
+                data_.append(ans['answer'])
+                data_.append(str(ans['delta']))
+                body.append(",".join(data_))
+    res= make_response("\n".join(body))
+    res.headers["Content-Disposition"] = "attachment filename=%s"%filename
+    return res

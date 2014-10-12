@@ -39,10 +39,10 @@ Usuarios
 				{% endraw %}
             </td> 
 			<td data-title="'Actions'">
-				<a href="/dashboard/info/user/{{user.userid | angular}}" class="button tiny">info</a>
+				<a href="{{url_for('.user_info')}}/{{user.userid | angular}}" class="button tiny">info</a>
             </td>
   			<td data-title="'Invite'">
-				<a href="/dashboard/invite/user/{{user.userid | angular}}" class="button tiny">Yes</a>
+				<a href="{{url_for('.user_invite')}}/{{user.userid | angular}}" class="button tiny">Yes</a>
             </td>
 	</tr>
 </table>

@@ -63,6 +63,12 @@ api_user=manager.create_api_blueprint(
     include_columns=['accepted','confirmed','id','userid','email','gender','year_birthday','experiments']
 )
 app.register_blueprint(api_user,url_prefix='/api')
+api_experimentuser=manager.create_api_blueprint(
+    ExperimentUser,methods=['GET'],
+    collection_name='eu'
+)
+app.register_blueprint(api_experimentuser,url_prefix='/api')
+
 Triangle(app)
 
 app.config.from_pyfile('golempoll.cfg')

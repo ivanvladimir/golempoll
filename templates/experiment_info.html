@@ -37,7 +37,7 @@ No activo
 			{% if not exp.status %}
 			<a href="{{url_for('.experiment_on',expid=exp.id)}}" class="button right ">Activar</a>
 			{% else %}
-			<a href="{{url_for('.experiment_off',expid=exp.id)}}" class="button right ">Activar</a>
+			<a href="{{url_for('.experiment_off',expid=exp.id)}}" class="button right alert">Desactivar</a>
 			{% endif %}
 			<a href="{{url_for('.experiment_edit',expid=exp.id)}}" class="button right ">Editar</a>
 			<a href="{{url_for('.experiment_test',expid=exp.id )}}" class="button right ">Probar</a>

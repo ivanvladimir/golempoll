@@ -38,7 +38,7 @@ import uuid
 from json import loads
 
 # Local import
-from database import db_session
+from database import db_session, recent
 from models import User, Experiment, ExperimentUser
 from forms import ExperimentF, UserInviteF
 
@@ -49,7 +49,13 @@ dashboardB = Blueprint('dashboard', __name__,template_folder='templates')
 @dashboardB.route("/")
 @login_required
 def dashboard():
-    return render_template('adminindex.html')
+    expid = request.cookies.get('project')
+    print expid
+    if expid:
+        exp=db_session.query(Experiment).get(expid)
+    else:
+        exp=None
+    return render_template('adminindex.html',exp=exp,recent=recent.get())
 
 # Creating a new experiment
 @dashboardB.route("/create/experiment", methods=['GET','POST'])
@@ -65,7 +71,7 @@ def experiment_new():
         db_session.commit()
         return redirect(url_for('experiment_info',expide=exp.id))
     else:
-        return render_template('experiment_edit.html',form=form,type='create')
+        return render_template('experiment_edit.html',form=form,type='create',recent=recent.get())
 
 # Showing info
 @dashboardB.route("/info/experiment")
@@ -75,12 +81,12 @@ def experiment_info(expid=None):
     if not expid:
         expid = request.cookies.get('project')
         if not expid:
-            return render_template('error.html',message="Projecto no seleccionado")
+            return render_template('error.html',message="Projecto no seleccionado",recent=recent.get())
         expid=int(expid)
     exp=db_session.query(Experiment).get(expid)
     if not exp:
-        return render_template('error.html',message="Experimento no definido")
-    return render_template('experiment_info.html',exp=exp)
+        return render_template('error.html',message="Experimento no definido",recent=recent.get())
+    return render_template('experiment_info.html',exp=exp,recent=recent.get())
 
 # Showing live info
 @dashboardB.route("/live/experiment")
@@ -90,12 +96,16 @@ def experiment_live(expid=None):
     if not expid:
         expid = request.cookies.get('project')
         if not expid:
-            return render_template('error.html',message="Projecto no seleccionado")
+            return render_template('error.html',message="Projecto no seleccionado",recent=recent.get())
         expid=int(expid)
     exp=db_session.query(Experiment).get(expid)
+    filename=exp.name+".csv"
+    keepcharacters = (' ','.','_')
+    filename=    "".join(c for c in filename if c.isalnum() or c in
+        keepcharacters).rstrip()
     if not exp:
-        return render_template('error.html',message="Experimento no definido")
-    return render_template('experiment_live.html',exp=exp)
+        return render_template('error.html',message="Experimento no definido",recent=recent.get())
+    return render_template('experiment_live.html',exp=exp,recent=recent.get(),fs=filename)
 
 
 
@@ -118,7 +128,7 @@ def show_result(result):
 def experiment_edit(expid):
     exp=db_session.query(Experiment).get(expid)
     if not exp:
-        return render_template('error.html',message="Experimento no definido")
+        return render_template('error.html',message="Experimento no definido",recent=recent.get())
     form=ExperimentF()
     if form.cancel.data:
         return redirect(url_for('.dashboard'))
@@ -135,13 +145,13 @@ def experiment_edit(expid):
     form.description.data=exp.description
 
     return render_template('experiment_edit.html',
-                form=form,type='edit',expid=expid)
+                form=form,type='edit',expid=expid,recent=recent.get())
 
 # List experiments
 @dashboardB.route("/list/experiment")
 @login_required
 def experiment_list():
-    return render_template('experiments.html')
+    return render_template('experiments.html',recent=recent.get())
 
 # Delete experiment
 @dashboardB.route("/delete/experiment/")
@@ -151,11 +161,11 @@ def experiment_delete(expid=None):
     if not expid:
         expid = request.cookies.get('project')
         if not expid:
-            return render_template('error.html',message="Proyecto no seleccionado")
-        return render_template('error.html',message="Proyecto no seleccionado")
+            return render_template('error.html',message="Proyecto no seleccionado",recent=recent.get())
+        return render_template('error.html',message="Proyecto no seleccionado",recent=recent.get())
     exp=db_session.query(Experiment).get(expid)
     if not exp:
-        return render_template('error.html',message="Experimento no definido")
+        return render_template('error.html',message="Experimento no definido",recent=recent.get())
     db_session.delete(exp)
     db_session.commit()
     return redirect(url_for('.dashboard'))
@@ -166,19 +176,24 @@ def experiment_delete(expid=None):
 def experiment_select(expid):
     exp=db_session.query(Experiment).get(expid)
     if not exp:
-        return render_template('error.html',message="Experimento no definido")
-    resp = make_response(render_template('adminindex.html'))
+        return render_template('error.html',message="Experimento no definido",recent=recent.get())
+    resp = make_response(redirect(url_for('.dashboard')))
     resp.set_cookie('project', str(expid))
     resp.set_cookie('project_name', exp.name)
+    recent.pull(expid)
     return resp
 
 # Close experiment
-@dashboardB.route("/cerrar/experiment")
+@dashboardB.route("/close/experiment")
 @login_required
 def experiment_close():
-    resp = make_response(render_template('adminindex.html'))
+    resp = make_response(redirect(url_for('.dashboard')))
+    expid = int(request.cookies.get('project'))
+    name = request.cookies.get('project_name')
+    recent.push(expid,name)
     resp.set_cookie('project', "",expires=0)
     resp.set_cookie('project_name', "",expires=0)
+
     return resp
 
 # Clone experiment
@@ -189,11 +204,11 @@ def experiment_clone(expid=None):
     if not expid:
         expid = request.cookies.get('project')
         if not expid:
-            return render_template('error.html',message="Projecto no seleccionado")
+            return render_template('error.html',message="Projecto no seleccionado",recent=recent.get())
         expid=int(expid)
     exp_=db_session.query(Experiment).get(expid)
     if not exp_:
-        return render_template('error.html',message="Experimento no definido")
+        return render_template('error.html',message="Experimento no definido",recent=recent.get())
     exp=Experiment()
     exp.name=exp_.name
     exp.definition=exp_.definition
@@ -210,7 +225,7 @@ def experiment_clone(expid=None):
 def experiment_on(expid):
     exp=db_session.query(Experiment).get(expid)
     if not exp:
-        return render_template('error.html',message="Experimento no definido")
+        return render_template('error.html',message="Experimento no definido",recent=recent.get())
     exp.status=True 
     db_session.add(exp)
     db_session.commit()
@@ -221,7 +236,7 @@ def experiment_on(expid):
 def experiment_off(expid):
     exp=db_session.query(Experiment).get(expid)
     if not exp:
-        return render_template('error.html',message="Experimento no definido")
+        return render_template('error.html',message="Experimento no definido",recent=recent.get())
     exp.status=False 
     db_session.add(exp)
     db_session.commit()
@@ -235,11 +250,11 @@ def experiment_test(expid=None):
     if not expid:
         expid = request.cookies.get('project')
         if not expid:
-            return render_template('error.html',message="Projecto no seleccionado")
+            return render_template('error.html',message="Projecto no seleccionado",recent=recent.get())
         expid=int(expid)
     exp=db_session.query(Experiment).get(expid)
     if not exp:
-        return render_template('error.html',message="Experimento no definido")
+        return render_template('error.html',message="Experimento no definido",recent=recent.get())
     resp = make_response(render_template('poll_prev.html',
                         instructions=exp.instructions ))
     resp.set_cookie('running_exp',str(expid))
@@ -257,7 +272,7 @@ def user_new():
     user=User(userid)
     db_session.add(user)
     db_session.commit()
-    return render_template('user_created.html',userid=userid)
+    return render_template('user_created.html',userid=userid,recent=recent.get())
 
 # Invite user
 @dashboardB.route("/invite/user", methods=['GET','POST'])
@@ -266,7 +281,7 @@ def user_invite():
     """Invite a user via email"""
     project = request.cookies.get('project')
     if not project:
-        return render_template('error.html',message="Projecto no seleccionado")
+        return render_template('error.html',message="Projecto no seleccionado",recent=recent.get())
     form=UserInviteF(request.form)
     if form.cancel.data:
         return redirect(url_for(dashboard))
@@ -279,23 +294,23 @@ def user_invite():
         db_session.commit()
         return redirect(url_for('.user_info',userid=userid))
     else:
-        return render_template('email_edit.html',form=form)
+        return render_template('email_edit.html',form=form,recent=recent.get())
 
 @dashboardB.route("/invite/user/<userid>")
 @login_required
-def user_invite_userid(userid):
+def user_invite_userid(userid=None):
     """Invite a user via email"""
     proj = request.cookies.get('project')
     if not proj:
-        return render_template('error.html',message="Projecto no seleccionado")
+        return render_template('error.html',message="Projecto no seleccionado",recent=recent.get())
     try:
         user=User.query.filter(User.userid==userid).one()
     except:
-        return render_template('error.html',message="Usuario in existente")
+        return render_template('error.html',message="Usuario in existente",recent=recent.get())
     if not user.confirmed:
-        return render_template('error.html',message="Usuario no ha confirmado")
+        return render_template('error.html',message="Usuario no ha confirmado",recent=recent.get())
     if not user.accepted:
-        return render_template('error.html',message="Usuario no activo")
+        return render_template('error.html',message="Usuario no activo",recent=recent.get())
     exp=Experiment.query.gett(int(proj))
     try:
         db_session.query(User.id,User.experiments).filter(User.id==userid).one()
@@ -309,7 +324,7 @@ def user_invite_userid(userid):
         #    URL_DEL="/delete/user/"+userid),
         #)
         return redirect(url_for('.user_info',userid=user.userid))
-    return render_template('error.html',message="Usuario ya activo en ese experimento")
+    return render_template('error.html',message="Usuario ya activo en ese experimento",recent=recent.get())
 
 # List users
 @dashboardB.route("/list/user")
@@ -322,11 +337,11 @@ def user_list():
 @login_required
 def user_info(userid=None):
     if not userid:
-        return render_template('error.html',message="Usuario no definido")
+        return render_template('error.html',message="Usuario no definido",recent=recent.get())
     user=User.query.filter(User.userid==userid).one()
     if not user:
-        return render_template('error.html',message="Usuario existente")
-    return render_template('user_info.html',user=user)
+        return render_template('error.html',message="Usuario existente",recent=recent.get())
+    return render_template('user_info.html',user=user,recent=recent.get())
 
 
 

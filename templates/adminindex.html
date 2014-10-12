@@ -8,22 +8,58 @@
 Panel de control principal
 </h1>
 
+{% if exp %}
 <h3>
+Experimento activo
+</h3>
+
+<b>
+	Nombre 
+</b>
+<div class="panel">
+<div class="row">
+<div class="large-5 columns">
+	{{ exp.name }}
+</div>
+<div class="large-7 columns">
+			<a href="{{url_for('.experiment_delete',expid=exp.id)}}" class="button right alert tiny">Borrar</a>
+			{% if not exp.status %}
+			<a href="{{url_for('.experiment_on',expid=exp.id)}}" class="button right tiny ">Activar</a>
+			{% else %}
+			<a href="{{url_for('.experiment_off',expid=exp.id)}}" class="button right alert tiny">Desactivar</a>
+			{% endif %}
+			<a href="{{url_for('.experiment_edit',expid=exp.id)}}" class="button right tiny">Editar</a>
+			<a href="{{url_for('.experiment_test',expid=exp.id )}}" class="button right tiny">Probar</a>
+			<a href="{{url_for('.experiment_live',expid=exp.id)}}" class="button right tiny">Live</a>
+
+</div>
+</div>
+</div>
+<hr/>
+{% endif %}
+
+
+<h4>
 Opciones para experimentos:
 </h3>
+<div class="panel">
 <ul class="button-group [radius round]">
   <li><a href="{{url_for('.experiment_list')}}" class="button">Listar</a></li>
   <li><a href="{{url_for('.experiment_new')}}" class="button">Crear nuevo</a></li>
 </ul>
+</div>
 
 
-<h3>
+<h4>
 Opcioes usuario
+</h3>
+<div class="panel">
 <ul class="button-group [radius round]">
   <li><a href="{{url_for('.user_list')}}" class="button">Listar</a></li>
   <li><a href="{{url_for('.user_invite')}}" class="button">Invitar</a></li>
   <li><a href="{{url_for('.user_new')}}" class="button">Crea</a></li>
 </ul>
+</div>
 
 
 {%endblock%}

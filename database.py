@@ -35,3 +35,32 @@ Base.query = db_session.query_property()
 def init_db():
     import models
     Base.metadata.create_all(bind=engine)
+
+class Recent():
+    ids=[]
+    names=[]
+
+    def push(self,expid,name):
+        try:
+            ix=self.ids.index(expid)
+            del self.ids[ix]
+            del self.names[ix]
+        except ValueError:
+            pass
+        self.ids.append(expid)
+        self.names.append(name)
+
+    def pull(self,expid):
+        try:
+            ix=self.ids.index(expid)
+            del self.ids[ix]
+            del self.names[ix]
+        except ValueError:
+            pass
+
+
+    def get(self):
+        res= zip(self.ids,self.names)
+        res.reverse()
+        return res
+recent = Recent()
