@@ -64,14 +64,18 @@ def user_confirmation(userid):
 # Managing experiments
 @pollB.route("/<userid>")
 def login(userid):
-    user=User.query.filter(User.userid==userid).one()
+    user=User.query.filter(User.userid==userid)
     if not user:
-        return render_template('error.html',message="Usuario existente")
+        return render_template('error.html',message="Usuario inexistente")
+    try:
+        user=user[0]
+    except IndexError:
+        return render_template('error.html',message="Usuario inexistente")
     user.authenticated = True
     db_session.add(user)
     db_session.commit()
     login_user(user)
-    return render_template('myexperiments.html')
+    return render_template('myexperiments.html',projs=user.experiments)
               
 # Instrutions
 @pollB.route("/poll/<int:expid>")
@@ -101,8 +105,7 @@ def finish_poll():
     except:
         proj_id = int(request.cookies.get('running_exp'))
         user_id = int(request.cookies.get('running_user'))
-        ans=ExperimentUser.get((proj_id,user_id))
-        print ans
+        ans=db_session.query(ExperimentUser).get((user_id,proj_id))
         ans.finish=True
         db_session.add(ans)
         db_session.commit()

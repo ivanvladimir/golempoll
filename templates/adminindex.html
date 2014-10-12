@@ -12,17 +12,17 @@ Panel de control principal
 Opciones para experimentos:
 </h3>
 <ul class="button-group [radius round]">
-  <li><a href="/dashboard/list/experiment" class="button">Listar experimento</a></li>
-  <li><a href="/dashboard/create/experiment" class="button">Crear nuevo experimento</a></li>
+  <li><a href="{{url_for('.experiment_list')}}" class="button">Listar</a></li>
+  <li><a href="{{url_for('.experiment_new')}}" class="button">Crear nuevo</a></li>
 </ul>
 
 
 <h3>
 Opcioes usuario
 <ul class="button-group [radius round]">
-  <li><a href="/dashboard/list/user" class="button">Listar usuarios</a></li>
-  <li><a href="/dashboard/invite/user" class="button">Invitar nuevo usuario</a></li>
-  <li><a href="/dashboard/create/user" class="button">Crear usuario</a></li>
+  <li><a href="{{url_for('.user_list')}}" class="button">Listar</a></li>
+  <li><a href="{{url_for('.user_invite')}}" class="button">Invitar</a></li>
+  <li><a href="{{url_for('.user_new')}}" class="button">Crea</a></li>
 </ul>
 
 

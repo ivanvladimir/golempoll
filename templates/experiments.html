@@ -16,7 +16,6 @@ Experimentos
 	</div>
 </div>
 <table ng-controller="ExperimentListCtrl" ng-table="tableParams" class="table">
-	{{ exps | angular }}
 	<tr ng-repeat="exp in exps | filter:query">
 			<td data-title="'Activar'">
 				<a href="/dashboard/{{'{{exp.status | switch}}'}}/experiment/{{exp.id | angular}}">
@@ -35,11 +34,11 @@ Experimentos
                 {{exp.date_modification | angular }}
             </td>
             <td data-title="'Acciones'">
-				<a href="/dashboard/info/experiment/{{exp.id | angular}}" class="button tiny">Info</a>
-				<a href="/dashboard/test/experiment/{{exp.id | angular}}" class="button tiny">Probar</a>
-				<a href="/dashboard/clone/experiment/{{exp.id | angular}}" class="button tiny">Clonar</a>
-				<a href="/dashboard/edit/experiment/{{exp.id | angular}}" class="button tiny">Editar</a>
-				<a href="/dashboard/delete/experiment/{{exp.id | angular}}" class="button tiny alert">Borrar</a>
+				<a href="{{url_for('.experiment_info',expid=None)}}/{{exp.id | angular}}" class="button tiny">Info</a>
+				<a href="{{url_for('.experiment_test',expid=None)}}/{{exp.id | angular}}" class="button tiny">Probar</a>
+				<a href="{{url_for('.experiment_clone',expid=None)}}/{{exp.id | angular}}" class="button tiny">Clonar</a>
+				<a href="{{url_for('.experiment_live',expid=None)}}/{{exp.id | angular}}" class="button tiny">Live</a>
+				<a href="{{url_for('.experiment_delete',expid=None)}}/{{exp.id | angular}}" class="button tiny alert">Borrar</a>
             </td>
 			<td data-title="'Seleccionar'">
 				<a href="/dashboard/select/experiment/{{exp.id | angular}}" class="button tiny">Sí</a>

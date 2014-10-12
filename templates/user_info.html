@@ -27,6 +27,7 @@ Confirmado y estado
 {{ user.confirmed }} | {{ user.accepted }}
 </div>
 
+<h3>Experimentos</h3>
 <table ng-controller="ExperimentUserListCtrl" userid="{{user.id}}" ng-table="tableParams" class="table">
 	<tr ng-repeat="exp in exps | filter:query">
 			<td data-title="'Acceptó'">
@@ -38,7 +39,7 @@ Confirmado y estado
                 {{exp.name | angular }}
             </td> 
 			<td data-title="'Acciones'">
-				<a href="/dashboard/info/experiment/{{exp.id | angular}}" class="button tiny">info</a>
+				<a href="{{url_for('.experiment_info',expid=None)}}/{{exp.id | angular}}" class="button tiny">info</a>
             </td>
 			<td data-title="'Realizado'">
 			    {% raw %}

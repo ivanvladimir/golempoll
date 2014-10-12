@@ -4,6 +4,7 @@ experimentApp.controller('ExperimentUserListCtrl', function ($scope,$http,$filte
     $http.get('/api/user/'+$attrs.userid).success(function(data) {
     $scope.exps = data.experiments;
 
+
     $scope.tableParams = new ngTableParams({
         page: 1,            // show first page
         count: 10,          // count per page
@@ -16,11 +17,25 @@ experimentApp.controller('ExperimentUserListCtrl', function ($scope,$http,$filte
             $scope.exps = params.sorting() ?
                                 $filter('orderBy')($scope.exps, params.orderBy()) :
                                 data;
-            $defer.resolve($scopes.exp.slice((params.page() - 1) * params.count(), params.page() * params.count()));
+            $defer.resolve($scope.exp.slice((params.page() - 1) * params.count(), params.page() * params.count()));
         }
     }); 
 	});
 });
+
+experimentApp.controller('AnswerListCtrl', function ($scope,$http,$filter,$attrs,ngTableParams) {
+    $http.get('/api/answer/'+$attrs.expid).success(function(data) {
+    $scope.answers = data;
+	keys=[]
+	values=[]
+	for (val in data.rawcounts){
+		keys.push(val);
+		values.push(data.rawcounts[val]);
+	}
+	init_graph(keys,values);
+	});
+});
+
 
 experimentApp.controller('UserExperimentListCtrl', function ($scope,$http,$filter,$attrs,ngTableParams) {
     $http.get('/api/experiment/'+$attrs.expid).success(function(data) {
@@ -28,7 +43,6 @@ experimentApp.controller('UserExperimentListCtrl', function ($scope,$http,$filte
 	var d = new Date();
 	$scope.current_year = d.getFullYear();
 
-
     $scope.tableParams = new ngTableParams({
         page: 1,            // show first page
         count: 10,          // count per page
@@ -41,7 +55,7 @@ experimentApp.controller('UserExperimentListCtrl', function ($scope,$http,$filte
             $scope.exps = params.sorting() ?
                                 $filter('orderBy')($scope.exps, params.orderBy()) :
                                 data;
-            $defer.resolve($scopes.exp.slice((params.page() - 1) * params.count(), params.page() * params.count()));
+            $defer.resolve($scope.exp.slice((params.page() - 1) * params.count(), params.page() * params.count()));
         }
     }); 
 	});
@@ -65,7 +79,7 @@ experimentApp.controller('ExperimentListCtrl', function ($scope,$http,$filter,ng
             $scope.exps = params.sorting() ?
                                 $filter('orderBy')($scope.exps, params.orderBy()) :
                                 data;
-            $defer.resolve($scopes.exp.slice((params.page() - 1) * params.count(), params.page() * params.count()));
+            $defer.resolve($scope.exp.slice((params.page() - 1) * params.count(), params.page() * params.count()));
         }
     }); 
 	});
@@ -143,7 +157,9 @@ experimentApp.controller('GolemPollController', function ($scope, $http, $window
 		$scope.current+=1;
 		if($scope.current>=$scope.poll.media.files.length){
 			if($cookies.running_user!=undefined){
-			 	$http.put('/api/definition/'+$cookies.running_exp+'/'+$cookies.running_user,{answers:$scope.answers});
+			 	$http.put('/api/definition/'+$cookies.running_exp+'/'+$cookies.running_user,{answers:angular.toJson($scope.answers)}).success(function(data) {
+				}).error(function(data) {
+				});
 			 	$window.location='/finish';
 			 }else{
 			 	$window.location='/dashboard/result/'+angular.toJson($scope.answers);

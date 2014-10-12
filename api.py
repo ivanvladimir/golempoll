@@ -28,6 +28,7 @@ from flask import (
     request
     )
 from flask.ext.login import login_required
+from json import loads, dumps
 from yaml import load
 
 # Local import
@@ -50,11 +51,43 @@ def definition(expid):
 @apiB.route("/definition/<int:expid>/<int:userid>",methods=['PUT'])
 @login_required
 def answer(expid,userid):
-    exp=db_session.query(ExperimentUser).get((expid,userid))
+    exp=db_session.query(ExperimentUser).get((userid,expid))
     if not exp:
         return jsonify('No register')
-    exp.janswers=request.ars.get('answers','[]')
+    try:
+        exp.janswers=request.json['answers']
+    except:
+        exp.janswers=None
     db_session.add(exp)
     db_session.commit()
-    return jsonify(definition)
+    return jsonify({})
+
+
+@apiB.route("/answer/<int:expid>",methods=['GET'])
+@login_required
+def answers(expid):
+    exps=ExperimentUser.query.filter(ExperimentUser.id_exp==expid).all()
+    if not exps:
+        return jsonify('No register')
+    ans_={}
+    ans__={}
+    for exp in exps:
+        if exp.janswers:
+            answer = loads(exp.janswers)
+            for ans in answer:
+                try:
+                    ans_[ans['emotion']]
+                except KeyError:
+                    ans_[ans['emotion']]={}
+                try:
+                    ans_[ans['emotion']][ans['answer']]+=1
+                except KeyError:
+                    ans_[ans['emotion']][ans['answer']]=1
+                try:
+                    ans__[ans['answer']]+=1
+                except KeyError:
+                    ans__[ans['answer']]=1
+
+    return jsonify({'raw':answer,'confusion':ans_,'rawcounts':ans__
+            })
  

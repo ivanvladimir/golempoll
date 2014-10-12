@@ -1,9 +1,6 @@
 {% extends "default.html" %}
 
-{% block scripts %}
-{% endblock %}
-
-{% block title %}Dashboard: Encuentas pendientes {% endblock %}
+{% block title %}Dashboard: Experimentos Golem{% endblock %}
 
 {% block content %}
 
@@ -23,10 +20,10 @@ Los sisguientes son los experimentos en los que desamos que nos apoyes, puedes e
 	</thead>
 	<tbody>
 		<tr>
-		{% for expid,proj in projs %}
-			<td>{{proj.description}}</td>
+		{% for proj in projs %}
+			<td>{{proj.name}}</td>
 			<td><a href="/del/{{loop.index}}" class="button tiny alert">Declinar</a>
-				<a href="/poll/{{expid }}" class="button tiny">Contestar</a>
+				<a href="/poll/{{proj.id }}" class="button tiny">Contestar</a>
 			</td>
 		{% endfor %}
 		</tr>

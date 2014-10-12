@@ -33,14 +33,14 @@ No activo
 </div>
 
 <div class="row">
-			<a href="/dashboard/delete/experiment/{{exp.id}}" class="button right alert">Borrar</a>
+			<a href="{{url_for('.experiment_delete',expid=exp.id)}}" class="button right alert">Borrar</a>
 			{% if not exp.status %}
-			<a href="/dashboard/on/experiment/{{exp.id}}" class="button right ">Activar</a>
+			<a href="{{url_for('.experiment_on',expid=exp.id)}}" class="button right ">Activar</a>
 			{% else %}
-			<a href="/dashboard/off/experiment/{{exp.id}}" class="button right ">Activar</a>
+			<a href="{{url_for('.experiment_off',expid=exp.id)}}" class="button right ">Activar</a>
 			{% endif %}
-			<a href="/dashboard/edit/experiment/{{exp.id}}" class="button right ">Editar</a>
-			<a href="/dashboard/test/experiment/{{exp.id }}" class="button right ">Probar</a>
+			<a href="{{url_for('.experiment_edit',expid=exp.id)}}" class="button right ">Editar</a>
+			<a href="{{url_for('.experiment_test',expid=exp.id )}}" class="button right ">Probar</a>
 </div>
 
 <table ng-controller="UserExperimentListCtrl" expid="{{exp.id}}" ng-table="tableParams" class="table">

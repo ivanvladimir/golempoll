@@ -63,18 +63,41 @@ def experiment_new():
         form.populate_obj(exp)
         db_session.add(exp)
         db_session.commit()
-        return redirect('/dashboard/info/experiment/'+str(exp.id))
+        return redirect(url_for('experiment_info',expide=exp.id))
     else:
         return render_template('experiment_edit.html',form=form,type='create')
 
 # Showing info
+@dashboardB.route("/info/experiment")
 @dashboardB.route("/info/experiment/<int:expid>")
 @login_required
-def experiment_info(expid):
+def experiment_info(expid=None):
+    if not expid:
+        expid = request.cookies.get('project')
+        if not expid:
+            return render_template('error.html',message="Projecto no seleccionado")
+        expid=int(expid)
     exp=db_session.query(Experiment).get(expid)
     if not exp:
         return render_template('error.html',message="Experimento no definido")
     return render_template('experiment_info.html',exp=exp)
+
+# Showing live info
+@dashboardB.route("/live/experiment")
+@dashboardB.route("/live/experiment/<int:expid>")
+@login_required
+def experiment_live(expid=None):
+    if not expid:
+        expid = request.cookies.get('project')
+        if not expid:
+            return render_template('error.html',message="Projecto no seleccionado")
+        expid=int(expid)
+    exp=db_session.query(Experiment).get(expid)
+    if not exp:
+        return render_template('error.html',message="Experimento no definido")
+    return render_template('experiment_live.html',exp=exp)
+
+
 
 # Showing info
 @dashboardB.route("/result/<result>")
@@ -121,9 +144,15 @@ def experiment_list():
     return render_template('experiments.html')
 
 # Delete experiment
+@dashboardB.route("/delete/experiment/")
 @dashboardB.route("/delete/experiment/<int:expid>")
 @login_required
-def experiment_delete(expid):
+def experiment_delete(expid=None):
+    if not expid:
+        expid = request.cookies.get('project')
+        if not expid:
+            return render_template('error.html',message="Proyecto no seleccionado")
+        return render_template('error.html',message="Proyecto no seleccionado")
     exp=db_session.query(Experiment).get(expid)
     if not exp:
         return render_template('error.html',message="Experimento no definido")
@@ -153,9 +182,15 @@ def experiment_close():
     return resp
 
 # Clone experiment
+@dashboardB.route("/clone/experiment")
 @dashboardB.route("/clone/experiment/<int:expid>")
 @login_required
-def experiment_clone(expid):
+def experiment_clone(expid=None):
+    if not expid:
+        expid = request.cookies.get('project')
+        if not expid:
+            return render_template('error.html',message="Projecto no seleccionado")
+        expid=int(expid)
     exp_=db_session.query(Experiment).get(expid)
     if not exp_:
         return render_template('error.html',message="Experimento no definido")
@@ -183,7 +218,7 @@ def experiment_on(expid):
 
 @dashboardB.route("/off/experiment/<int:expid>")
 @login_required
-def experiment_offf(expid):
+def experiment_off(expid):
     exp=db_session.query(Experiment).get(expid)
     if not exp:
         return render_template('error.html',message="Experimento no definido")
@@ -193,9 +228,15 @@ def experiment_offf(expid):
     return redirect(url_for('.experiment_info',expid=expid))
 
 # Testing experiment
+@dashboardB.route("/test/experiment")
 @dashboardB.route("/test/experiment/<int:expid>")
 @login_required
-def experiment_test(expid):
+def experiment_test(expid=None):
+    if not expid:
+        expid = request.cookies.get('project')
+        if not expid:
+            return render_template('error.html',message="Projecto no seleccionado")
+        expid=int(expid)
     exp=db_session.query(Experiment).get(expid)
     if not exp:
         return render_template('error.html',message="Experimento no definido")
@@ -233,9 +274,10 @@ def user_invite():
         u=uuid.uuid4()
         userid=str(u)
         user=User(userid)
+        form.populate_obj(user)
         db_session.add(user)
         db_session.commit()
-        return redirect(url_for('user_info',userid=userid))
+        return redirect(url_for('.user_info',userid=userid))
     else:
         return render_template('email_edit.html',form=form)
 
@@ -254,7 +296,7 @@ def user_invite_userid(userid):
         return render_template('error.html',message="Usuario no ha confirmado")
     if not user.accepted:
         return render_template('error.html',message="Usuario no activo")
-    exp=Experiment.query.ge(int(proj))
+    exp=Experiment.query.gett(int(proj))
     try:
         db_session.query(User.id,User.experiments).filter(User.id==userid).one()
     except:
@@ -275,9 +317,12 @@ def user_list():
     return render_template('users.html')
 
 # Show info from user
+@dashboardB.route("/info/user")
 @dashboardB.route("/info/user/<userid>")
 @login_required
-def user_info(userid):
+def user_info(userid=None):
+    if not userid:
+        return render_template('error.html',message="Usuario no definido")
     user=User.query.filter(User.userid==userid).one()
     if not user:
         return render_template('error.html',message="Usuario existente")

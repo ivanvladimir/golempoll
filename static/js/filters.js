@@ -23,3 +23,9 @@ expFilters.filter('active_experiment', function() {
 		      return input ? input : "- - -";
 	  };
 });
+
+expFilters.filter('count', function() {
+	  return function(input) {
+		      return input ? input : 0;
+	  };
+});
