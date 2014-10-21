@@ -53,7 +53,8 @@
       		<li class="divider"></li>
 	  		{% endif %}
 	  		{% for id,name in recent %}
-            <li><a href="{{url_for('.experiment_select',expid=id)}}">{{name}}</a></li>
+            <li><a href="{{url_for('.experiment_select',expmd=id)}}">{{name}}</a></li>
+    <script src="//cdn.jsdelivr.net/foundation/5.3.3/js/vendor/modernizr.js"></script>
 	  		{% endfor %}
 
           </ul>
@@ -110,10 +111,11 @@
     </div>
   </footer>
 
-    <script src="//cdnjs.cloudflare.com/ajax/libs/foundation/5.3.3/js/vendor/fastclick.js"></script>
-    <script src="//cdnjs.cloudflare.com/ajax/libs/foundation/5.3.3/js/vendor/jquery.js"></script>
-    <script src="//cdnjs.cloudflare.com/ajax/libs/foundation/5.3.3/js/foundation.min.js"></script>
-    <script src="//cdn.jsdelivr.net/foundation/5.3.3/js/vendor/modernizr.js"></script>
+    <script src="http://cdnjs.cloudflare.com/ajax/libs/foundation/5.3.3/js/vendor/fastclick.js"></script>
+    <script src="http://cdnjs.cloudflare.com/ajax/libs/foundation/5.3.3/js/vendor/jquery.js"></script>
+    <script src="http://cdnjs.cloudflare.com/ajax/libs/foundation/5.3.3/js/foundation.min.js"></script>
+    <script src="http://cdn.jsdelivr.net/foundation/5.3.3/js/vendor/modernizr.js"></script>
+	<script src="{{url_for('static', filename='js/modconf.js')}}"></script>
     <script>
 	    $(document).foundation({bindings: 'events'});
 	</script>

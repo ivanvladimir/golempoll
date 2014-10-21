@@ -1,0 +1,29 @@
+{% extends "dashboard.html" %}
+
+{% block scripts %}
+{% endblock %}
+
+{% block title %}Dashboard: Media disponible - {% endblock %}
+
+{% block content %}
+
+<h1>
+Media
+</h1>
+<div class="row">
+    <div class="large-6 columns">
+	<label>Filtrar:</label> <input  type="text" placeholder="Inserta palabras clave"  ng-model="query"/>
+	</div>
+</div>
+
+<div ng-controller="MediaListCtrl">
+	<ul class='container' ng-repeat="file in files.files | filter:query">
+			<ul><img width="100px" src="/static/media/{{file | angular }}"/></ul>
+			{{file | angular }}
+	</ul>
+</div>
+
+
+{%endblock%}
+
+

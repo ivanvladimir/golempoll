@@ -1,0 +1,111 @@
+{% extends "dashboard.html" %}
+
+{% block scripts %}
+	<script src="{{url_for('static', filename='js/chart.min.js')}}"></script>
+{% endblock %}
+
+
+{% block content %}
+
+<script type="text/javascript">
+            function init_graph(keys,data) {
+                var ctx = $("#myChart").get(0).getContext("2d");
+
+                var data = {
+                    labels: keys,
+                    datasets: [
+                        {
+                            fillColor: "rgba(220,220,220,0.5)",
+                            strokeColor: "rgba(220,220,220,1)",
+                            pointColor: "rgba(220,220,220,1)",
+                            pointStrokeColor: "#fff",
+                            data: data
+                        }
+                    ]
+                }
+
+                var myNewChart = new Chart(ctx).Bar(data);
+            }
+
+</script>
+
+
+<h1>
+Experimento:
+{% if exp.status %}
+Activo
+{% else %}
+No activo
+{% endif %}
+</h1>
+<b>
+	Nombre 
+</b>
+<div class="panel">
+<div class="row">
+<div class="large-5 columns">
+	{{ exp.name }}
+</div>
+<div class="large-7 columns">
+		<a href="{{url_for('api.download',expid=exp.id,fs=fs)}}" class="button right tiny">Bajar datos</a>
+</div>
+</div>
+
+
+</div>
+
+
+
+<h3>Matrix de confusión</h3>
+<div ng-controller="AnswerListCtrl" expid="{{exp.id}}" >
+
+<table>
+<thead>
+<tr>
+			<th >
+				Respuesta
+            </th>
+			<th ng-repeat="(real,data_) in answers.confusion">
+				{{ real | angular }}
+            </th>
+</tr>
+</thead>
+<tbody>
+		<tr ng-repeat="(given,counts) in answers.rawcounts">
+			<td >
+			   {{ given | angular }}
+            </td>
+			<td  ng-repeat="(real,data_) in answers.confusion">
+				{% raw %}
+                {{ answers.confusion[real][given] | count }}
+				{% endraw %}
+            </td>
+		</tr>
+</tbody>
+</table>
+
+<h3>Frecuencia de respuestas</h3>
+
+
+<canvas id="myChart" width="400" height="400"></canvas>
+
+
+<h3>Resultados raw</h3>
+<table ng-table="tableParams" class="table">
+	<tr ng-repeat="answer in answers.raw | filter:query">
+			<td data-title="'Emoción'">
+                {{answer.emotion | angular  }}
+            </td>
+			<td data-title="'Respuesta'">
+                {{answer.answer | angular  }}
+            </td>
+			<td data-title="'Tiempo'">
+                {{answer.delta | angular  }}
+            </td>
+	</tr>
+</table>
+</div>
+
+    {%endblock%}
+
+

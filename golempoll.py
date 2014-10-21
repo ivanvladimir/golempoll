@@ -89,10 +89,10 @@ def shutdown_session(exception=None):
 @login_manager.user_loader
 def load_user(userid):
     try:
-        user=User.query.get(userid)
+        user=User.query.filter(User.userid==userid).one()
     except :
         try:
-            user=Admin.query.filter(Admin.id==userid).one()
+            user=Admin.query.get(userid)
         except:
             return None
     return user
@@ -142,7 +142,6 @@ def login_admin():
 
 
 @app.route("/logout")
-@login_required
 def logout():
     logout_user()
     return redirect(url_for('poll.index'))

@@ -26,7 +26,8 @@ from flask import (
     Blueprint,
     jsonify,
     request,
-    make_response
+    make_response,
+    current_app
     )
 from flask.ext.login import login_required
 from json import loads
@@ -35,6 +36,8 @@ from datetime import datetime
 # Local import
 from database import db_session
 from models import ExperimentUser, Experiment
+from os import listdir
+
 
 # Registering Blueprint
 apiB = Blueprint('api', __name__,template_folder='templates')
@@ -91,6 +94,16 @@ def answers(expid):
 
     return jsonify({'raw':answer,'confusion':ans_,'rawcounts':ans__
             })
+
+
+@apiB.route("/media")
+@login_required
+def media():
+    media=[f for f in listdir(current_app.config['MEDIA_DIR']+"/") if f.endswith(".jpg"
+            or f.endswith(".png"))]
+    return jsonify({'files':media})
+
+
 
 @apiB.route("/download/<int:expid>/<fs>")
 @login_required

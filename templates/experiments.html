@@ -15,6 +15,7 @@ Experimentos
 	<label>Filtrar:</label> <input  type="text" placeholder="Inserta palabras clave"  ng-model="query"/>
 	</div>
 </div>
+
 <table ng-controller="ExperimentListCtrl" ng-table="tableParams" class="table">
 	<tr ng-repeat="exp in exps | filter:query">
 			<td data-title="'Activar'">
@@ -38,14 +39,20 @@ Experimentos
 				<a href="{{url_for('.experiment_test',expid=None)}}/{{exp.id | angular}}" class="button tiny">Probar</a>
 				<a href="{{url_for('.experiment_clone',expid=None)}}/{{exp.id | angular}}" class="button tiny">Clonar</a>
 				<a href="{{url_for('.experiment_live',expid=None)}}/{{exp.id | angular}}" class="button tiny">Live</a>
-				<a href="{{url_for('.experiment_delete',expid=None)}}/{{exp.id | angular}}" class="button tiny alert">Borrar</a>
+				<a class="modal-confirm button tiny alert" data-title="Confirmación para borrar proyecto" data-content="¿Estás seguro de querer borrar el proyecto: {{exp.name | angular}}?" data-options='{"confirmType" : "url" , "confirmArgs" : "{{url_for('.experiment_delete',expid=None)}}/{{exp.id | angular}}","confirmText":"Sí", "cancelText":"No","color":"#000"}' >Borrar</a>
+        </form>
+
+
+
+
+		
             </td>
 			<td data-title="'Seleccionar'">
-				<a href="/dashboard/select/experiment/{{exp.id | angular}}" class="button tiny">Sí</a>
+				<a href="{{url_for('.experiment_select',expid=None)}}/{{exp.id | angular}}" class="button tiny">Sí</a>
             </td>
-
 	</tr>
 </table>
+
 
 {%endblock%}
 

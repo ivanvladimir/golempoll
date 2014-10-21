@@ -69,7 +69,7 @@ def experiment_new():
         form.populate_obj(exp)
         db_session.add(exp)
         db_session.commit()
-        return redirect(url_for('experiment_info',expide=exp.id))
+        return redirect(url_for('.experiment_info',expid=exp.id))
     else:
         return render_template('experiment_edit.html',form=form,type='create',recent=recent.get())
 
@@ -154,7 +154,7 @@ def experiment_list():
     return render_template('experiments.html',recent=recent.get())
 
 # Delete experiment
-@dashboardB.route("/delete/experiment/")
+@dashboardB.route("/delete/experiment")
 @dashboardB.route("/delete/experiment/<int:expid>")
 @login_required
 def experiment_delete(expid=None):
@@ -171,9 +171,15 @@ def experiment_delete(expid=None):
     return redirect(url_for('.dashboard'))
 
 # Select experiment for invite user 
+@dashboardB.route("/select/experiment")
 @dashboardB.route("/select/experiment/<int:expid>")
 @login_required
 def experiment_select(expid):
+    if not expid:
+        expid = request.cookies.get('project')
+        if not expid:
+            return render_template('error.html',message="Proyecto no seleccionado",recent=recent.get())
+        return render_template('error.html',message="Proyecto no seleccionado",recent=recent.get())
     exp=db_session.query(Experiment).get(expid)
     if not exp:
         return render_template('error.html',message="Experimento no definido",recent=recent.get())
@@ -296,6 +302,23 @@ def user_invite():
     else:
         return render_template('email_edit.html',form=form,recent=recent.get())
 
+@dashboardB.route("/delete/user")
+@dashboardB.route("/delete/user/<int:userid>")
+@login_required
+def user_delete(userid=None):
+    if not userid:
+        return render_template('error.html',message="Usuario no seleccionado",recent=recent.get())
+    user=db_session.query(User).get(userid)
+    if not user:
+        return render_template('error.html',message="Usuario no encontrado",recent=recent.get())
+    user.status=False
+    db_session.add(user)
+    db_session.commit()
+    return redirect(url_for('.dashboard'))
+
+
+
+
 @dashboardB.route("/invite/user/<userid>")
 @login_required
 def user_invite_userid(userid=None):
@@ -350,4 +373,11 @@ def user_info(userid=None):
 @login_required
 def experiment_invite():
     return redirect(url_for('dashboard'))
+
+# Media
+@dashboardB.route("/media")
+@login_required
+def media_list():
+    return render_template('media.html')
+
 

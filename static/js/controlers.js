@@ -17,7 +17,7 @@ experimentApp.controller('ExperimentUserListCtrl', function ($scope,$http,$filte
             $scope.exps = params.sorting() ?
                                 $filter('orderBy')($scope.exps, params.orderBy()) :
                                 data;
-            $defer.resolve($scope.exp.slice((params.page() - 1) * params.count(), params.page() * params.count()));
+            $defer.resolve($scope.exps.slice((params.page() - 1) * params.count(), params.page() * params.count()));
         }
     }); 
 	});
@@ -35,6 +35,14 @@ experimentApp.controller('AnswerListCtrl', function ($scope,$http,$filter,$attrs
 	init_graph(keys,values);
 	});
 });
+
+
+experimentApp.controller('MediaListCtrl', function ($scope,$http,$filter,$attrs,ngTableParams) {
+    $http.get('/api/media').success(function(data) {
+    $scope.files =data;
+	});
+});
+
 
 
 experimentApp.controller('UserExperimentListCtrl', function ($scope,$http,$filter,$attrs,ngTableParams) {
@@ -55,7 +63,7 @@ experimentApp.controller('UserExperimentListCtrl', function ($scope,$http,$filte
             $scope.exps = params.sorting() ?
                                 $filter('orderBy')($scope.exps, params.orderBy()) :
                                 data;
-            $defer.resolve($scope.exp.slice((params.page() - 1) * params.count(), params.page() * params.count()));
+            $defer.resolve($scope.users.slice((params.page() - 1) * params.count(), params.page() * params.count()));
         }
     }); 
 	});
@@ -79,10 +87,16 @@ experimentApp.controller('ExperimentListCtrl', function ($scope,$http,$filter,ng
             $scope.exps = params.sorting() ?
                                 $filter('orderBy')($scope.exps, params.orderBy()) :
                                 data;
-            $defer.resolve($scope.exp.slice((params.page() - 1) * params.count(), params.page() * params.count()));
+            $defer.resolve($scope.exps.slice((params.page() - 1) * params.count(), params.page() * params.count()));
         }
     }); 
 	});
+	$scope.del_exp=0 ;
+	$scope.del_name="None" ;
+  	$scope.fdel_exp= function(exp){
+		$scope.del_exp=exp.id ;
+		$scope.del_name=exp.name ;
+	};
 });
 
 experimentApp.controller('UserListCtrl', function ($scope,$http,$filter,ngTableParams) {

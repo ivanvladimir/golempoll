@@ -82,7 +82,7 @@ class User(Base):
     def is_anonymous(self):
         return False
     def get_id(self):
-        return unicode(self.id)
+        return unicode(self.userid)
 
 class Experiment(Base):
     __tablename__ = 'experiments'
@@ -115,4 +115,6 @@ class ExperimentUser(Base):
     janswers      = Column(String)
     finish        = Column(Boolean, default=False)
     date_invited  = Column(DateTime)
+    date_taken    = Column(DateTime)
+
 
