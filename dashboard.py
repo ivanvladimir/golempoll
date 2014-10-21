@@ -81,7 +81,7 @@ def experiment_info(expid=None):
     if not expid:
         expid = request.cookies.get('project')
         if not expid:
-            return render_template('error.html',message="Projecto no seleccionado",recent=recent.get())
+            return render_template('error.html',message="Proyecto no seleccionado",recent=recent.get())
         expid=int(expid)
     exp=db_session.query(Experiment).get(expid)
     if not exp:
@@ -96,7 +96,7 @@ def experiment_live(expid=None):
     if not expid:
         expid = request.cookies.get('project')
         if not expid:
-            return render_template('error.html',message="Projecto no seleccionado",recent=recent.get())
+            return render_template('error.html',message="Proyecto no seleccionado",recent=recent.get())
         expid=int(expid)
     exp=db_session.query(Experiment).get(expid)
     filename=exp.name+".csv"
@@ -210,7 +210,7 @@ def experiment_clone(expid=None):
     if not expid:
         expid = request.cookies.get('project')
         if not expid:
-            return render_template('error.html',message="Projecto no seleccionado",recent=recent.get())
+            return render_template('error.html',message="Proyecto no seleccionado",recent=recent.get())
         expid=int(expid)
     exp_=db_session.query(Experiment).get(expid)
     if not exp_:
@@ -256,7 +256,7 @@ def experiment_test(expid=None):
     if not expid:
         expid = request.cookies.get('project')
         if not expid:
-            return render_template('error.html',message="Projecto no seleccionado",recent=recent.get())
+            return render_template('error.html',message="Proyecto no seleccionado",recent=recent.get())
         expid=int(expid)
     exp=db_session.query(Experiment).get(expid)
     if not exp:
@@ -287,7 +287,7 @@ def user_invite():
     """Invite a user via email"""
     project = request.cookies.get('project')
     if not project:
-        return render_template('error.html',message="Projecto no seleccionado",recent=recent.get())
+        return render_template('error.html',message="Proyecto no seleccionado",recent=recent.get())
     form=UserInviteF(request.form)
     if form.cancel.data:
         return redirect(url_for(dashboard))
@@ -311,7 +311,7 @@ def user_delete(userid=None):
     user=db_session.query(User).get(userid)
     if not user:
         return render_template('error.html',message="Usuario no encontrado",recent=recent.get())
-    user.status=False
+    user.accepted=False
     db_session.add(user)
     db_session.commit()
     return redirect(url_for('.dashboard'))
@@ -325,7 +325,7 @@ def user_invite_userid(userid=None):
     """Invite a user via email"""
     proj = request.cookies.get('project')
     if not proj:
-        return render_template('error.html',message="Projecto no seleccionado",recent=recent.get())
+        return render_template('error.html',message="Proyecto no seleccionado",recent=recent.get())
     try:
         user=User.query.filter(User.userid==userid).one()
     except:
