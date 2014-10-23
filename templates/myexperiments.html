@@ -22,8 +22,8 @@ Los sisguientes son los experimentos en los que desamos que nos apoyes, puedes e
 		<tr>
 		{% for proj in projs %}
 			<td>{{proj.name}}</td>
-			<td><a href="/del/{{loop.index}}" class="button tiny alert">Declinar</a>
-				<a href="/poll/{{proj.id }}" class="button tiny">Contestar</a>
+			<td><a href="{{url_for('.delete',expid=loop.index)}}" class="button tiny alert">Declinar</a>
+				<a href="{{url_for('.poll',expid=proj.id)}}" class="button tiny">Contestar</a>
 			</td>
 		{% endfor %}
 		</tr>

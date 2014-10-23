@@ -39,35 +39,25 @@ No activo
 			{% else %}
 			<a href="{{url_for('.experiment_off',expid=exp.id)}}" class="button right alert">Desactivar</a>
 			{% endif %}
+			<a href="{{url_for('.experiment_live',expid=exp.id)}}" class="button right">Live</a>
 			<a href="{{url_for('.experiment_edit',expid=exp.id)}}" class="button right ">Editar</a>
 			<a href="{{url_for('.experiment_test',expid=exp.id )}}" class="button right ">Probar</a>
 </div>
 
 <table ng-controller="UserExperimentListCtrl" expid="{{exp.id}}" ng-table="tableParams" class="table">
 	<tr ng-repeat="user in users | filter:query">
-			{{ users | angular }}
-			<td data-title="'Confirmed'">
-			    {% raw %}
-                {{user.accepted | checkmark  }}
-			    {% endraw %}
-            </td>
             <td data-title="'Email'" sortable="'email'">
                 {{user.email | angular }}
             </td> 
 			<td data-title="'Actions'">
-				<a href="/dashboard/info/user/{{exp.id | angular}}" class="button tiny">info</a>
+				<a href="{{url_for('.user_info')}}/{{user.userid | angular}}" class="button tiny">info</a>
+  				<a href="{{url_for('.user_reinvite')}}/{{user.userid|angular}}/{{exp.id }}" class="button tiny">Reinvitar</a>
             </td>
          	<td data-title="'Edad'" sortable="'year_birthday'">
 				{% raw %}
                 {{current_year-user.year_birthday }}
 				{% endraw %}
             </td> 
-			<td data-title="'Accepted'">
-			    {% raw %}
-                {{user.confirmed | checkmark  }}
-			    {% endraw %}
-            </td>
-
 	</tr>
 </table>
 

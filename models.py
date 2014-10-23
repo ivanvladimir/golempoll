@@ -69,7 +69,7 @@ class User(Base):
     previous      = Column(Enum('yes', 'no'))
     gender        = Column(Enum('M', 'F'))
     experiments   = relationship('Experiment', backref='user', 
-                secondary='experiment_user')
+                secondary='experiment_user',lazy='dynamic')
 
     def __init__(self, userid):
         self.userid  = userid
@@ -94,6 +94,7 @@ class Experiment(Base):
     date_modification = Column(DateTime,nullable=False)
     instructions  = Column(String,nullable=False)
     invitation    = Column(String,nullable=False)
+    reinvitation  = Column(String,nullable=False)
     status        = Column(Boolean,default=True)
     users         = relationship('User', backref='experiment', 
                 secondary='experiment_user')

@@ -46,6 +46,17 @@ from forms import ExperimentF, UserInviteF
 # Registering Blueprint
 dashboardB = Blueprint('dashboard', __name__,template_folder='templates')
 
+def add_users(proj,ids):
+    exp=Experiment.query.get(int(proj))
+    for idd in ids:
+        user=User.query.get(idd)
+        #msg= Message(proj.invitation.format(
+        #    URL="/confirm/"+user.userid,
+        #    URL_DEL="/delete/user/"+user.userid))
+        eu=ExperimentUser(experiment=exp,user=user,accepted=False,finish=False,date_invited=datetime.now())
+        db_session.add(eu)
+        db_session.commit()
+       
 # Managing dashboard
 @dashboardB.route("/")
 @login_required
@@ -141,6 +152,7 @@ def experiment_edit(expid):
     form.name.data=exp.name
     form.definition.data=exp.definition
     form.invitation.data=exp.invitation
+    form.reinvitation.data=exp.reinvitation
     form.instructions.data=exp.instructions
     form.description.data=exp.description
 
@@ -284,7 +296,6 @@ def user_new():
             userid=str(u)
             user=User(userid)
             user.email=form.email.data
-            user.confirmed=True
             user.accepted=True
             db_session.add(user)
             db_session.commit()
@@ -293,7 +304,7 @@ def user_new():
                     servername=current_app.config['BASE_NAME'],
                     recent=recent.get())
         else:
-            return render_template('error.html',message="Usuario ya definido con id:"+user_mail[0].userid,recent=recent.get())
+            return render_template('error.html',message="Usuario ["+form.email.data+"] ya definido con id:"+user_mail[0].userid,recent=recent.get())
     else:
         return render_template('email_edit.html',form=form,recent=recent.get(),opt="crear")
 
@@ -307,15 +318,20 @@ def user_invite():
         return render_template('error.html',message="Proyecto no seleccionado",recent=recent.get())
     form=UserInviteF(request.form)
     if form.cancel.data:
-        return redirect(url_for(dashboard))
+        return redirect(url_for('.dashboard'))
     if form.validate_on_submit():
-        u=uuid.uuid4()
-        userid=str(u)
-        user=User(userid)
-        form.populate_obj(user)
-        db_session.add(user)
-        db_session.commit()
-        return redirect(url_for('.user_info',userid=userid))
+        user_mail=User.query.filter(User.email==form.email.data).all()
+        if not user_mail:
+            u=uuid.uuid4()
+            userid=str(u)
+            user=User(userid)
+            user.accepted=True
+            form.populate_obj(user)
+            db_session.add(user)
+            db_session.commit()
+            return redirect(url_for('.user_info',userid=userid))
+        else:
+            return render_template('error.html',message="Usuario ["+form.email.data+"] ya definido con id:"+user_mail[0].userid,recent=recent.get())
     else:
         return render_template('email_edit.html',form=form,recent=recent.get())
 
@@ -342,10 +358,8 @@ def users_add():
     if not project:
         return render_template('error.html',message="Proyecto no seleccionado",recent=recent.get())
     ids=loads(request.args.get('ids'))
-    print ids
+    add_users(project,ids)
     return redirect(url_for(".experiment_info",expid=project)) 
-
-
 
 @dashboardB.route("/delete/user")
 @dashboardB.route("/delete/user/<int:userid>")
@@ -362,35 +376,50 @@ def user_delete(userid=None):
     return redirect(url_for('.dashboard'))
 
 
-@dashboardB.route("/invite/user/<userid>")
+@dashboardB.route("/invite/user/<int:userid>")
 @login_required
 def user_invite_userid(userid=None):
     """Invite a user via email"""
-    proj = request.cookies.get('project')
+    proj = int(request.cookies.get('project'))
     if not proj:
         return render_template('error.html',message="Proyecto no seleccionado",recent=recent.get())
+    try:
+        user=User.query.get(userid)
+    except:
+        return render_template('error.html',message="Usuario in existente",recent=recent.get())
+    if not user.accepted:
+        return render_template('error.html',message="Usuario no activo",recent=recent.get())
+    exps=[0 for exp in user.experiments if exp.id==proj]
+    if len(exps)==0:
+        add_users(proj,[user.id])
+        return redirect(url_for('.user_info',userid=user.userid))
+    return render_template('error.html',message="Usuario ya activo en ese experimento",recent=recent.get())
+
+@dashboardB.route("/reinvite")
+@dashboardB.route("/reinvite/<userid>")
+@dashboardB.route("/reinvite/<userid>/<int:expid>")
+@login_required
+def user_reinvite(userid=None,expid=None):
+    """Invite a user via email"""
     try:
         user=User.query.filter(User.userid==userid).one()
     except:
         return render_template('error.html',message="Usuario in existente",recent=recent.get())
-    if not user.confirmed:
-        return render_template('error.html',message="Usuario no ha confirmado",recent=recent.get())
     if not user.accepted:
         return render_template('error.html',message="Usuario no activo",recent=recent.get())
-    exp=Experiment.query.gett(int(proj))
-    try:
-        db_session.query(User.id,User.experiments).filter(User.id==userid).one()
-    except:
-        eu=ExperimentUser(experiment=exp,user=user,accepted=False,finish=False,date_invited=datetime.now())
-        db_session.add(eu)
-        db_session.commit()    
-        # TODO: Send EMAIL
-        #msg= Message(proj.invitation.format(
-        #    URL="/confirm/"+userid,
-        #    URL_DEL="/delete/user/"+userid),
-        #)
-        return redirect(url_for('.user_info',userid=user.userid))
-    return render_template('error.html',message="Usuario ya activo en ese experimento",recent=recent.get())
+    exps=[0 for exp in user.experiments if exp.id==expid]
+    if len(exps)>0:
+        ans=db_session.query(ExperimentUser).get((user.id,expid))
+        if ans.accepted:
+            #msg= Message(proj.invitation.format(
+            #    URL="/confirm/"+user.userid,
+            #    URL_DEL="/delete/user/"+user.userid))
+            return redirect(url_for('.user_info',userid=user.userid))
+        else:
+            return render_template('error.html',message=u"Usuario declino",recent=recent.get())
+    else:
+        return render_template('error.html',message=u"Usuario no está activo en  experimento",recent=recent.get())
+
 
 # List users
 @dashboardB.route("/list/user")
@@ -411,8 +440,6 @@ def user_info(userid=None):
     if not user:
         return render_template('error.html',message="Usuario existente",recent=recent.get())
     return render_template('user_info.html',user=user,recent=recent.get())
-
-
 
 
 @dashboardB.route("/invite")

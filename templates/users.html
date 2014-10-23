@@ -42,16 +42,14 @@ Usuarios
 				{% endraw %}
             </td> 
 			<td data-title="'Actions'">
-				<a href="{{url_for('.user_info')}}/{{user.userid | angular}}" class="button tiny">info</a>
+				<a href="{{url_for('.user_invite')}}/{{user.id | angular}}" class="button tiny">Invite</a>
+				<a href="{{url_for('.user_info')}}/{{user.userid | angular}}" class="button tiny">Info</a>
 				<a class="modal-confirm button tiny alert" data-title="Confirmación para borrar proyecto" data-content="¿Estás seguro de querer borrar el usuario: {{exp.mail| angular}}?" data-options='{"confirmType" : "url" , "confirmArgs" : "{{url_for('.user_delete',expid=None)}}/{{user.id | angular}}","confirmText":"Sí", "cancelText":"No","color":"#000"}' >Borrar</a>
 
             </td>
 			{% if proj %}
 				<td data-title="'Invitar'">
-				<input name="{{user.userid | angular}}" type="checkbox"  ng-model="user.selected"/>
-				</td>
-				<td data-title="'Invite'">
-					<a href="{{url_for('.user_invite')}}/{{user.id | angular}}" class="button tiny">Yes</a>
+				<input name="{{user.id | angular}}" type="checkbox"  ng-model="user.selected"/>
 				</td>
 			{% endif %}
 	</tr>

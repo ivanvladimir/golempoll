@@ -17,9 +17,9 @@
 
 {% block content %}
 
-<h1>
-Información extra de usuario
-</h1>
+<h2>
+Por favor llena los siguientes datos
+</h2>
 
 <form action="{{url_for('.user_confirmation',userid=userid)}}" method="POST" accept-charset="utf-8" enctype="multipart/form-data">
     {{ form.csrf_token }}
@@ -29,6 +29,10 @@ Información extra de usuario
 	{{ render_field(form.previous)}}
 	{{ form.save() }} {{form.cancel()}} 
 </form>
+
+<p>
+Nota que la información no te identifica de ninguna manera
+</p>
 {%endblock%}
 
 

@@ -65,6 +65,7 @@ class ExperimentF(Form):
     description  = StringField(u'Descripción', [validators.Length(min=4,max=255),validators.DataRequired()])
     definition   = TextAreaField(u'Definición del experimento')
     invitation   = TextAreaField(u'Texto para invitación')
+    reinvitation = TextAreaField(u'Texto para re-invitación')
     instructions = TextAreaField(u'Instrucciones experimento')
     save         = SubmitField("Guardar")
     cancel       = SubmitField("Cancelar")

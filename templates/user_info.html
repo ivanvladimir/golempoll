@@ -15,33 +15,38 @@ Correo
 	{{ user.email }} 
 </div>
 <b>
-Número de experimentos invitado a contestar
+Confirmado 
 </b>
 <div class="panel">
-	{{ user.experiments | length }} 
+{{ user.confirmed }} 
 </div>
-<b>
-Confirmado y estado
+Activo
 </b>
 <div class="panel">
-{{ user.confirmed }} | {{ user.accepted }}
+{{ user.accepted }}
 </div>
+
+
+<p>
+Opciones
+<ul class="button-group [radius round]">
+  <li><a href="{{url_for('poll.login',userid=user.userid)}}" class="button">Ir a espacio de usuario</a></li>
+</ul>
+</p>
+
+
 
 <h3>Experimentos</h3>
 <table ng-controller="ExperimentUserListCtrl" userid="{{user.id}}" ng-table="tableParams" class="table">
 	<tr ng-repeat="exp in exps | filter:query">
-			<td data-title="'Acceptó'">
-			    {% raw %}
-                {{exp.accepted | checkmark  }}
-			    {% endraw %}
-            </td>
             <td data-title="'Projecto'" sortable="'name'">
                 {{exp.name | angular }}
             </td> 
 			<td data-title="'Acciones'">
-				<a href="{{url_for('.experiment_info',expid=None)}}/{{exp.id | angular}}" class="button tiny">info</a>
+				<a href="{{url_for('.experiment_info',expid=None)}}/{{exp.id | angular}}" class="button tiny">Info</a>
+  				<a href="{{url_for('.user_reinvite',userid=user.userid)}}/{{exp.id | angular}}" class="button tiny">Reinvitar</a>
             </td>
-			<td data-title="'Realizado'">
+			<td data-title="'Realizado'" sortable="'finish'">
 			    {% raw %}
                 {{exp.finish | checkmark  }}
 			    {% endraw %}

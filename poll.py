@@ -44,10 +44,13 @@ pollB = Blueprint('poll', __name__,template_folder='templates')
 
 # Managing poll y página principal
 @pollB.route("/confirm/<userid>", methods=['GET','POST'])
+@login_required
 def user_confirmation(userid):
     user=User.query.filter(User.userid==userid).one()
     if not user:
             return render_template('error.html',message="Usuario existente")
+    if user.confirmed:
+        return redirect(url_for('.login',userid=userid))
     form=UserF()
     if form.cancel.data:
         return redirect(url_for('index'))
@@ -75,6 +78,8 @@ def login(userid):
     db_session.add(user)
     db_session.commit()
     login_user(user)
+    if not user.confirmed:
+        return redirect(url_for('.user_confirmation',userid=userid))
     return render_template('myexperiments.html',projs=user.experiments)
               
 # Instrutions
@@ -84,11 +89,46 @@ def poll_(expid):
     exp=db_session.query(Experiment).get(expid)
     if not exp:
         return render_template('error.html',message="Experimento no definido")
+    userid=current_user.get_id()
+    user=User.query.filter(User.userid==userid).one()
+    ans=db_session.query(ExperimentUser).get((user.id,expid))
+    ans.accepted=True
+    db_session.add(ans)
+    db_session.commit()
     resp = make_response(render_template('poll_prev.html',
                         instructions=exp.instructions ))
     resp.set_cookie('running_exp', str(expid))
     resp.set_cookie('running_user', str(current_user.get_id()))
     return resp
+
+@pollB.route("/del/<int:expid>")
+@login_required
+def delete(expid):
+    userid=current_user.get_id()
+    user=User.query.filter(User.userid==userid).one()
+    ans=db_session.query(ExperimentUser).get((user.id,expid))
+    ans.finished=True
+    ans.accepted=False
+    db_session.add(ans)
+    db_session.commit()
+    return redirect(url_for('.index'))
+
+@pollB.route("/self",methods=["POST"])
+def self():
+    email= request.form['email']
+    user_mail=User.query.filter(User.email==email).all()
+    if not user_mail:
+        u=uuid.uuid4()
+        userid=str(u)
+        user=User(userid)
+        user.email=email
+        user.accepted=True
+        db_session.add(user)
+        db_session.commit()
+    else:
+        print "Usuario existente"
+    return redirect(url_for('.index'))
+
 
 # Polling interface
 @pollB.route("/poll")
@@ -104,8 +144,9 @@ def finish_poll():
         resp = make_response(redirect(url_for('dashboard.dashboard')))
     except:
         proj_id = int(request.cookies.get('running_exp'))
-        user_id = int(request.cookies.get('running_user'))
-        ans=db_session.query(ExperimentUser).get((user_id,proj_id))
+        user_id = request.cookies.get('running_user')
+        user=User.query.filter(User.userid==user_id).one()
+        ans=db_session.query(ExperimentUser).get((user.id,proj_id))
         ans.finish=True
         db_session.add(ans)
         db_session.commit()

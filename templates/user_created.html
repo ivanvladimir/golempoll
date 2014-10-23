@@ -15,8 +15,8 @@ Usuario creado exitosamente
 <p>
 Opciones
 <ul class="button-group [radius round]">
-  <li><a href="/dashboard/invite/user/{{userid}}" class="button">Mandar invitación</a></li>
-  <li><a href="/confirm/{{userid}}" class="button">Ir a espacio de usuario</a></li>
+  <li><a href="{{url_for('poll.login',userid=userid)}}" class="button">Mandar invitación</a></li>
+  <li><a href="{{url_for('.user_invite_userid',userid=userid)}}" class="button">Ir a espacio de usuario</a></li>
 </ul>
 </p>
 
