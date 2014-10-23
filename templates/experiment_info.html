@@ -33,7 +33,7 @@ No activo
 </div>
 
 <div class="row">
-			<a href="{{url_for('.experiment_delete',expid=exp.id)}}" class="button right alert">Borrar</a>
+			<a class="modal-confirm button alert right" data-title="Confirmación para borrar proyecto" data-content="¿Estás seguro de querer borrar el proyecto: {{exp.name}}?" data-options='{"confirmType" : "url" , "confirmArgs" : "{{url_for('.experiment_delete',expid=exp.id)}}","confirmText":"Sí", "cancelText":"No","color":"#000"}' >Borrar</a>
 			{% if not exp.status %}
 			<a href="{{url_for('.experiment_on',expid=exp.id)}}" class="button right ">Activar</a>
 			{% else %}
@@ -44,6 +44,12 @@ No activo
 			<a href="{{url_for('.experiment_test',expid=exp.id )}}" class="button right ">Probar</a>
 </div>
 
+<div class="row">
+    <div class="large-6 columns">
+	<label>Filtrar:</label> <input  type="text" placeholder="Inserta palabras clave"  ng-model="query"/>
+	</div>
+</div>
+
 <table ng-controller="UserExperimentListCtrl" expid="{{exp.id}}" ng-table="tableParams" class="table">
 	<tr ng-repeat="user in users | filter:query">
             <td data-title="'Email'" sortable="'email'">
@@ -51,11 +57,28 @@ No activo
             </td> 
 			<td data-title="'Actions'">
 				<a href="{{url_for('.user_info')}}/{{user.userid | angular}}" class="button tiny">info</a>
-  				<a href="{{url_for('.user_reinvite')}}/{{user.userid|angular}}/{{exp.id }}" class="button tiny">Reinvitar</a>
+				{% if exp.status %}
+  					<a href="{{url_for('.user_reinvite')}}/{{user.userid|angular}}/{{exp.id }}" class="button tiny">Reinvitar</a>
+				{% endif %}
             </td>
          	<td data-title="'Edad'" sortable="'year_birthday'">
 				{% raw %}
                 {{current_year-user.year_birthday }}
+				{% endraw %}
+            </td> 
+			<td data-title="'Genero'" sortable="'gender'">
+				{% raw %}
+                {{user.gender }}
+				{% endraw %}
+            </td> 
+			<td data-title="'Escol.'" sortable="'level'">
+				{% raw %}
+                {{user.level }}
+				{% endraw %}
+            </td> 
+			<td data-title="'Exp.'" sortable="'previous'">
+				{% raw %}
+                {{user.previous }}
 				{% endraw %}
             </td> 
 	</tr>

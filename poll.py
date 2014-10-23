@@ -28,7 +28,8 @@ from flask import (
     url_for,
     render_template,
     request,
-    make_response
+    make_response,
+    current_app
     )
 from flask.ext.login import (
     login_user,
@@ -48,7 +49,7 @@ pollB = Blueprint('poll', __name__,template_folder='templates')
 def user_confirmation(userid):
     user=User.query.filter(User.userid==userid).one()
     if not user:
-            return render_template('error.html',message="Usuario existente")
+            return render_template('error_poll.html',message="Usuario existente")
     if user.confirmed:
         return redirect(url_for('.login',userid=userid))
     form=UserF()
@@ -69,11 +70,11 @@ def user_confirmation(userid):
 def login(userid):
     user=User.query.filter(User.userid==userid)
     if not user:
-        return render_template('error.html',message="Usuario inexistente")
+        return render_template('error_poll.html',message="Usuario inexistente")
     try:
         user=user[0]
     except IndexError:
-        return render_template('error.html',message="Usuario inexistente")
+        return render_template('error_poll.html',message="Usuario inexistente")
     user.authenticated = True
     db_session.add(user)
     db_session.commit()
@@ -88,7 +89,7 @@ def login(userid):
 def poll_(expid):
     exp=db_session.query(Experiment).get(expid)
     if not exp:
-        return render_template('error.html',message="Experimento no definido")
+        return render_template('error_poll.html',message="Experimento no definido")
     userid=current_user.get_id()
     user=User.query.filter(User.userid==userid).one()
     ans=db_session.query(ExperimentUser).get((user.id,expid))
@@ -98,7 +99,7 @@ def poll_(expid):
     resp = make_response(render_template('poll_prev.html',
                         instructions=exp.instructions ))
     resp.set_cookie('running_exp', str(expid))
-    resp.set_cookie('running_user', str(current_user.get_id()))
+    resp.set_cookie('running_user', str(user.id))
     return resp
 
 @pollB.route("/del/<int:expid>")
@@ -126,7 +127,8 @@ def self():
         db_session.add(user)
         db_session.commit()
     else:
-        print "Usuario existente"
+        return render_template('error_poll.html',
+            message="Usuario existente go to: "+current_app.config['BASE_NAME']+"/"+user_mail[0].userid)
     return redirect(url_for('.index'))
 
 
@@ -145,7 +147,7 @@ def finish_poll():
     except:
         proj_id = int(request.cookies.get('running_exp'))
         user_id = request.cookies.get('running_user')
-        user=User.query.filter(User.userid==user_id).one()
+        user=User.query.get(int(user_id))
         ans=db_session.query(ExperimentUser).get((user.id,proj_id))
         ans.finish=True
         db_session.add(ans)

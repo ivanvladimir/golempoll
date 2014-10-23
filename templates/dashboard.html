@@ -48,6 +48,9 @@
 			{% endraw %}
 		  </a>
 	      <ul class="dropdown">
+            <li ng-if="project"><a href="{{url_for('.experiment_info',expid=None)}}/{{project|angular}}">Info</a></li>
+			<li ng-if="project"><a href="{{url_for('.experiment_live',expid=None)}}/{{project|angular}}">Live</a></li>
+			<li ng-if="project"><a href="{{url_for('.experiment_test',expid=None)}}/{{project|angular}}">Probar</a></li>
             <li><a href="{{url_for('.experiment_close')}}">Cerrar</a></li>
 			 {% if recent %}
       		<li class="divider"></li>

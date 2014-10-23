@@ -75,6 +75,7 @@ def answers(expid):
         return jsonify('No register')
     ans_={}
     ans__={}
+    answer=[]
     for exp in exps:
         if exp.janswers:
             answer = loads(exp.janswers)

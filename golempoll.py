@@ -60,7 +60,7 @@ app.register_blueprint(api_experiment,url_prefix='/api')
 api_user=manager.create_api_blueprint(
     User,methods=['GET'],
     collection_name='user',
-    include_columns=['accepted','confirmed','id','userid','email','gender','year_birthday','experiments']
+    include_columns=['accepted','confirmed','id','userid','email','previous','level','gender','year_birthday','experiments']
 )
 app.register_blueprint(api_user,url_prefix='/api')
 api_experimentuser=manager.create_api_blueprint(

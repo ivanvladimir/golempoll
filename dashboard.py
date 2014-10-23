@@ -427,7 +427,11 @@ def user_reinvite(userid=None,expid=None):
 def user_list():
     """Invite a user via email"""
     proj = request.cookies.get('project')
-    return render_template('users.html',proj=proj)
+    if proj:
+        exp = Experiment.query.get(int(proj))
+    else:
+        exp = None
+    return render_template('users.html',proj=exp)
 
 # Show info from user
 @dashboardB.route("/info/user")

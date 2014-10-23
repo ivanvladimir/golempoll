@@ -15,25 +15,38 @@ Correo
 	{{ user.email }} 
 </div>
 <b>
-Confirmado 
+{% if not user.confirmed %}
+Para confirma ir a:
 </b>
 <div class="panel">
-{{ user.confirmed }} 
+<a href="{{url_for('poll.user_confirmation',userid=user.userid)}}">{{url_for('poll.user_confirmation',userid=user.userid)}}</a>
 </div>
+{% endif %}
 Activo
 </b>
 <div class="panel">
 {{ user.accepted }}
 </div>
 
+Info
+</b>
+<div class="panel">
+{{ user.gender }} | {{user.level}} | {{user.previous}}
+</div>
+
 
 <p>
 Opciones
 <ul class="button-group [radius round]">
-  <li><a href="{{url_for('poll.login',userid=user.userid)}}" class="button">Ir a espacio de usuario</a></li>
+  <li><a href="{{url_for('poll.login',userid=user.userid)}}" class="button right">Ir a espacio de usuario</a></li>
 </ul>
 </p>
 
+<div class="row">
+    <div class="large-6 columns">
+	<label>Filtrar:</label> <input  type="text" placeholder="Inserta palabras clave"  ng-model="query"/>
+	</div>
+</div>
 
 
 <h3>Experimentos</h3>
