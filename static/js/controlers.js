@@ -99,6 +99,7 @@ experimentApp.controller('ExperimentListCtrl', function ($scope,$http,$filter,ng
 	};
 });
 
+
 experimentApp.controller('UserListCtrl', function ($scope,$http,$filter,ngTableParams) {
   $http.get('/api/user?q={"filters":[{"name":"accepted","op":"eq","val":true}]}').success(function(data) {
 	var d = new Date();

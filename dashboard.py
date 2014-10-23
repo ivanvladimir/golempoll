@@ -361,6 +361,16 @@ def users_add():
     add_users(project,ids)
     return redirect(url_for(".experiment_info",expid=project)) 
 
+# TODO properly
+@dashboardB.route("/invite/nousers/<int:expid>")
+@login_required
+def experiment_nousers(expid):
+    """Invite a user via email"""
+    exp=db_session.query(Experiment).get(expid)
+    if not exp:
+        return render_template('error.html',message="Experimento no definido",recent=recent.get())
+    return  render_template('nousers.html',projname=exp.name)
+
 @dashboardB.route("/delete/user")
 @dashboardB.route("/delete/user/<int:userid>")
 @login_required
