@@ -18,9 +18,12 @@ Usuarios
 	</div>
 </div>
 
-<table ng-controller="UserListCtrl" ng-table="tableParams" class="table">
+<div  ng-controller="UserListCtrl" >
+{%if proj %}
+<form name="input" action="{{url_for(".users_invite")}}" method="POST">
+{%endif %}
+<table ng-table="tableParams" class="table">
 	<tr ng-repeat="user in users | filter:query">
-	{{ users | angular }}
 			<td data-title="'Confirmed'">
 			    {% raw %}
                 {{user.confirmed | checkmark  }}
@@ -43,11 +46,27 @@ Usuarios
 				<a class="modal-confirm button tiny alert" data-title="Confirmación para borrar proyecto" data-content="¿Estás seguro de querer borrar el usuario: {{exp.mail| angular}}?" data-options='{"confirmType" : "url" , "confirmArgs" : "{{url_for('.user_delete',expid=None)}}/{{user.id | angular}}","confirmText":"Sí", "cancelText":"No","color":"#000"}' >Borrar</a>
 
             </td>
-  			<td data-title="'Invite'">
-				<a href="{{url_for('.user_invite')}}/{{user.userid | angular}}" class="button tiny">Yes</a>
-            </td>
+			{% if proj %}
+				<td data-title="'Invitar'">
+				<input name="{{user.userid | angular}}" type="checkbox"  ng-model="user.selected"/>
+				</td>
+				<td data-title="'Invite'">
+					<a href="{{url_for('.user_invite')}}/{{user.id | angular}}" class="button tiny">Yes</a>
+				</td>
+			{% endif %}
 	</tr>
 </table>
+{%if proj %}
+
+<div class="row">
+		<input type="submit" class="button right tiny" value="Invitar"/>
+		<a href="#"  ng-click="random()" class="button right tiny">Random</a>
+		<a href="#"  ng-click="all()" class="button right tiny">All</a>
+		<a href="#"  ng-click="reset()" class="button right tiny alert">Reset</a>
+</div >
+</form>
+{%endif %}
+</div>
 
 {%endblock%}
 

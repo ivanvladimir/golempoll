@@ -20,8 +20,11 @@
 <h1>
 Experimento, prueba
 </h1>
-
+{% if type %}
 <form action={{url_for(".user_invite")}} method="POST" accept-charset="utf-8" enctype="multipart/form-data">
+{% else %}
+<form action={{url_for(".user_new")}} method="POST" accept-charset="utf-8" enctype="multipart/form-data">
+{% endif %}
     {{ form.csrf_token }}
     {{ render_field(form.email)}}
 	{{ form.save() }} {{form.cancel()}} 

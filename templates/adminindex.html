@@ -39,28 +39,29 @@ Experimento activo
 {% endif %}
 
 
+
+<h4>
+Opciones usuario:
+</h3>
+<div class="panel">
+<ul class="button-group [radius round]">
+  <li><a href="{{url_for('.user_list')}}" class="button">Listar</a></li>
+  <li><a href="{{url_for('.user_invite')}}" class="button">Invitar</a></li>
+  <li><a href="{{url_for('.user_new')}}" class="button">Crear</a></li>
+</ul>
+</div>
+
 <h4>
 Opciones para experimentos:
 </h3>
 <div class="panel">
 <ul class="button-group [radius round]">
   <li><a href="{{url_for('.experiment_list')}}" class="button">Listar</a></li>
-  <li><a href="{{url_for('.experiment_new')}}" class="button">Crear</a></li>
   <li><a href="{{url_for('.media_list')}}" class="button">Revisar media</a></li>
+  <li><a href="{{url_for('.experiment_new')}}" class="button">Crear</a></li>
 </ul>
 </div>
 
-
-<h4>
-Opcioes usuario
-</h3>
-<div class="panel">
-<ul class="button-group [radius round]">
-  <li><a href="{{url_for('.user_list')}}" class="button">Listar</a></li>
-  <li><a href="{{url_for('.user_invite')}}" class="button">Invitar</a></li>
-  <li><a href="{{url_for('.user_new')}}" class="button">Crea</a></li>
-</ul>
-</div>
 
 
 {%endblock%}

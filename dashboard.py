@@ -28,14 +28,15 @@ from flask import (
     url_for,
     render_template,
     request,
-    make_response
+    make_response, 
+    current_app
     )
 from flask.ext.login import login_required
 
 # Extra import
 from datetime import datetime
 import uuid
-from json import loads
+from json import loads, dumps
 
 # Local import
 from database import db_session, recent
@@ -50,7 +51,6 @@ dashboardB = Blueprint('dashboard', __name__,template_folder='templates')
 @login_required
 def dashboard():
     expid = request.cookies.get('project')
-    print expid
     if expid:
         exp=db_session.query(Experiment).get(expid)
     else:
@@ -270,17 +270,34 @@ def experiment_test(expid=None):
 
 # ------------------ Managing users -----------------------------------------
 # Create user
-@dashboardB.route("/create/user")
+@dashboardB.route("/create/user", methods=['GET','POST'])
 @login_required
 def user_new():
-    u=uuid.uuid4()
-    userid=str(u)
-    user=User(userid)
-    db_session.add(user)
-    db_session.commit()
-    return render_template('user_created.html',userid=userid,recent=recent.get())
+    """Create a user email"""
+    form=UserInviteF(request.form)
+    if form.cancel.data:
+        return redirect(url_for(dashboard))
+    if form.validate_on_submit():
+        user_mail=User.query.filter(User.email==form.email.data).all()
+        if not user_mail:
+            u=uuid.uuid4()
+            userid=str(u)
+            user=User(userid)
+            user.email=form.email.data
+            user.confirmed=True
+            user.accepted=True
+            db_session.add(user)
+            db_session.commit()
+            return render_template('user_created.html',
+                    userid=userid,
+                    servername=current_app.config['BASE_NAME'],
+                    recent=recent.get())
+        else:
+            return render_template('error.html',message="Usuario ya definido con id:"+user_mail[0].userid,recent=recent.get())
+    else:
+        return render_template('email_edit.html',form=form,recent=recent.get(),opt="crear")
 
-# Invite user
+# Invite new user
 @dashboardB.route("/invite/user", methods=['GET','POST'])
 @login_required
 def user_invite():
@@ -302,6 +319,34 @@ def user_invite():
     else:
         return render_template('email_edit.html',form=form,recent=recent.get())
 
+
+# Invite several users
+@dashboardB.route("/invite/users", methods=['POST'])
+@login_required
+def users_invite():
+    """Invite a user via email"""
+    project_name = request.cookies.get('project_name')
+    if not project_name:
+        return render_template('error.html',message="Proyecto no seleccionado",recent=recent.get())
+    ids= request.form.keys()
+    users=User.query.filter(User.id.in_(ids)).all()
+    ids=dumps(ids)
+    return  render_template('confirm_invitation.html',users=users,
+        ids=ids,projname=project_name)
+
+@dashboardB.route("/add/users")
+@login_required
+def users_add():
+    """Invite a user via email"""
+    project = request.cookies.get('project')
+    if not project:
+        return render_template('error.html',message="Proyecto no seleccionado",recent=recent.get())
+    ids=loads(request.args.get('ids'))
+    print ids
+    return redirect(url_for(".experiment_info",expid=project)) 
+
+
+
 @dashboardB.route("/delete/user")
 @dashboardB.route("/delete/user/<int:userid>")
 @login_required
@@ -315,8 +360,6 @@ def user_delete(userid=None):
     db_session.add(user)
     db_session.commit()
     return redirect(url_for('.dashboard'))
-
-
 
 
 @dashboardB.route("/invite/user/<userid>")
@@ -351,8 +394,11 @@ def user_invite_userid(userid=None):
 
 # List users
 @dashboardB.route("/list/user")
+@login_required
 def user_list():
-    return render_template('users.html')
+    """Invite a user via email"""
+    proj = request.cookies.get('project')
+    return render_template('users.html',proj=proj)
 
 # Show info from user
 @dashboardB.route("/info/user")

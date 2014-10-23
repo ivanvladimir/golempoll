@@ -100,10 +100,32 @@ experimentApp.controller('ExperimentListCtrl', function ($scope,$http,$filter,ng
 });
 
 experimentApp.controller('UserListCtrl', function ($scope,$http,$filter,ngTableParams) {
-  $http.get('/api/user').success(function(data) {
+  $http.get('/api/user?q={"filters":[{"name":"accepted","op":"eq","val":true}]}').success(function(data) {
 	var d = new Date();
     $scope.users = data.objects;
 	$scope.current_year = d.getFullYear();
+	
+	$scope.reset = function() {
+		for (var user in $scope.users) {
+			$scope.users[user].selected=false;
+		};
+	};
+	$scope.all = function() {
+		for (var user in $scope.users) {
+			$scope.users[user].selected=true;
+		};
+	};
+	$scope.random = function() {
+		$scope.reset();
+		for (var user in $scope.users) {
+			if (Math.random()>0.5){
+				$scope.users[user].selected=true;
+			}
+		};
+	};
+
+
+	$scope.reset();
 
     $scope.tableParams = new ngTableParams({
         page: 1,            // show first page

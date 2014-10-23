@@ -1,0 +1,25 @@
+{% extends "dashboard.html" %}
+
+{% block title %}Confirmar invitación - {% endblock %}
+
+{% block content %}
+<h2>
+¿Quieres invitar a los siguientes usuarios al experimento: {{projname}}?
+</h2>
+
+<div class="row">
+		<a href="{{url_for(".users_add",ids=ids)}}"  class="button">Sí</a>
+		<a href="{{url_for(".dashboard")}}"  class="button alert">No</a>
+</div >
+
+
+<ul>
+{% for user in users %}
+<li>{{user.email}}</li>
+{% endfor %}
+</ul>
+
+
+
+{%endblock%}
+
