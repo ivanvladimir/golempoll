@@ -103,7 +103,6 @@ def poll_(expid=None):
     return resp
 
 @pollB.route("/delete/<userid>")
-@login_required
 def user_delete(userid):
     user=User.query.filter(User.userid==userid).one()
     if not user:

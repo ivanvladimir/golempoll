@@ -37,7 +37,7 @@ Info
 
 <p>
 Opciones
-<ul class="button-group [radius round]">
+<ul class="button-group ">
   <li><a href="{{url_for('poll.login',userid=user.userid)}}" class="button right">Ir a espacio de usuario</a></li>
 </ul>
 </p>
@@ -67,6 +67,13 @@ Opciones
 
 	</tr>
 </table>
+
+<p>
+Opciones extra
+<ul class="button-group round">
+  <li><a href="{{url_for('.user_nuke',userid=user.userid)}}" class="button right red">Borrar al usuario!!</a></li>
+</ul>
+</p>
 
 
 
