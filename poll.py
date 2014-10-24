@@ -141,7 +141,7 @@ def self():
         db_session.commit()
     else:
         return render_template('error_poll.html',
-            message="Usuario existente go to: "+current_app.config['BASE_NAME']+"/"+user_mail[0].userid)
+            message="Usuario existente go to: "+current_app.config['BASE_NAME']+url_for('.login',userid=user_mail[0].userid))
     return redirect(url_for('.index'))
 
 
