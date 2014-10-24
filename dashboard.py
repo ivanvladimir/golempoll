@@ -395,9 +395,6 @@ def user_nuke(userid):
     user=User.query.filter(User.userid==userid).one()
     if not user:
         return render_template('error.html',message="Usuario no encontrado",recent=recent.get())
-    for exp in user.experiments:
-        eu=ExperimentUser.query.get((exp.id,user.id))
-        db_session.delete(eu)
     db_session.delete(user)
     db_session.commit()
     return redirect(url_for('.dashboard'))
