@@ -228,11 +228,12 @@ def experiment_clone(expid=None):
     if not exp_:
         return render_template('error.html',message="Experimento no definido",recent=recent.get())
     exp=Experiment()
-    exp.name=exp_.name
+    exp.name="CLONE:"+exp_.name
     exp.definition=exp_.definition
     exp.description=exp_.description
     exp.instructions=exp_.instructions
     exp.invitation=exp_.invitation
+    exp.reinvitation=exp_.reinvitation
     db_session.add(exp)
     db_session.commit()
     return redirect(url_for('.experiment_info',expid=expid))

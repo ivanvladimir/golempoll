@@ -67,6 +67,25 @@ def answer(expid,userid):
     return jsonify({})
 
 
+@apiB.route("/missing/<int:userid>",methods=['GET'])
+@login_required
+def missing(userid):
+    exps=ExperimentUser.query.filter(ExperimentUser.id_user==userid).all()
+    exps_=[]
+
+    for exp in exps:
+        exp_=Experiment.query.get(exp.id_exp)
+        if not exp.finish:
+            info={
+                'name':exp_.name,
+                'id':exp_.id,
+                'finished': exp.finish
+            }
+            exps_.append(info)
+    return jsonify({'experiments':exps_})
+
+
+
 @apiB.route("/answer/<int:expid>",methods=['GET'])
 @login_required
 def answers(expid):
@@ -79,6 +98,7 @@ def answers(expid):
     for exp in exps:
         if exp.janswers:
             answer = loads(exp.janswers)
+            print answer
             for ans in answer:
                 try:
                     ans_[ans['emotion']]

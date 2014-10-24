@@ -10,9 +10,10 @@
 		var start_time = new Date();
 	</script>
 
-	<div class="row" ng-controller="GolemPollController">
+	<div class="row" ng-init="model={}" ng-controller="GolemPollController">
     	<div class="large-6 columns">
 			<img ng-src="{{mainImage | angular}}" resetTimer/>
+
 		</div>
 		<div ng-if="poll.media.control== 'random'">
 		<div ng-repeat="option in options">
@@ -21,6 +22,40 @@
 		</div>
 		</div>
 		</div>
+		<div ng-if="poll.media.control== 'random_intense'">
+
+		<div class="large-5 columns">
+		<p class="panel">
+		Escoje la emoción expresada
+	
+		</p>
+		<div ng-repeat="option in options">
+			  <input type="radio" name="option" ng-model="model.chosen" ng-value="option"> {% raw %}{{poll.options.labels[option] }}{% endraw %} <br/>
+		</div>
+		<p class="panel">
+		¿Qué intensidad crees que tiene?
+		</p>
+
+		<div class="row">
+		<div class="large-4  columns">
+		Poca
+		</div>
+		<div class="large-4 centered columns">
+		{{model.intensity | angular }}
+		</div>
+		<div class="large-4 columns end">
+		Mucha
+		</div>
+		</div>
+
+		<div class="row">
+		<input type=range min=0 max=100 ng-model="model.intensity" id=fader style="width:80%;"></input>
+		</div>
+
+  		<a href="#" class="button expand" ng-click="next(chosen)" >Siguiente</a>
+		</div>
+		</div>
+
 		<div ng-if="poll.media.control== 'input'">
 		<div class="large-5 columns" >
 			<br/>
@@ -34,8 +69,6 @@
 			<a href="#"  class="button tiny" ng-click="next(option)">Siguiente</a>
 		</div>
 		</div>
-
-
 
 {%endblock%}
 

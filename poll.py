@@ -81,12 +81,12 @@ def login(userid):
     login_user(user)
     if not user.confirmed:
         return redirect(url_for('.user_confirmation',userid=userid))
-    return render_template('myexperiments.html',projs=user.experiments)
+    return render_template('myexperiments.html',projs=user.experiments,user=user)
               
 # Instrutions
 @pollB.route("/poll/<int:expid>")
 @login_required
-def poll_(expid):
+def poll_(expid=None):
     exp=db_session.query(Experiment).get(expid)
     if not exp:
         return render_template('error_poll.html',message="Experimento no definido")
@@ -102,16 +102,18 @@ def poll_(expid):
     resp.set_cookie('running_user', str(user.id))
     return resp
 
+@pollB.route("/del")
 @pollB.route("/del/<int:expid>")
 @login_required
-def delete(expid):
-    userid=current_user.get_id()
-    user=User.query.filter(User.userid==userid).one()
-    ans=db_session.query(ExperimentUser).get((user.id,expid))
-    ans.finished=True
-    ans.accepted=False
-    db_session.add(ans)
-    db_session.commit()
+def delete(expid=None):
+    if expid:
+        userid=current_user.get_id()
+        user=User.query.filter(User.userid==userid).one()
+        ans=db_session.query(ExperimentUser).get((user.id,expid))
+        ans.finished=True
+        ans.accepted=False
+        db_session.add(ans)
+        db_session.commit()
     return redirect(url_for('.index'))
 
 @pollB.route("/self",methods=["POST"])
@@ -145,14 +147,17 @@ def finish_poll():
         current_user.name
         resp = make_response(redirect(url_for('dashboard.dashboard')))
     except:
-        proj_id = int(request.cookies.get('running_exp'))
-        user_id = request.cookies.get('running_user')
-        user=User.query.get(int(user_id))
-        ans=db_session.query(ExperimentUser).get((user.id,proj_id))
-        ans.finish=True
-        db_session.add(ans)
-        db_session.commit()
-        resp = make_response(redirect(url_for('.index')))
+        proj_id = request.cookies.get('running_exp')
+        if not proj_id:
+            resp = make_response(redirect(url_for('.index')))
+        else:
+            user_id = request.cookies.get('running_user')
+            user=User.query.get(int(user_id))
+            ans=db_session.query(ExperimentUser).get((user.id,int(proj_id)))
+            ans.finish=True
+            db_session.add(ans)
+            db_session.commit()
+            resp = make_response(redirect(url_for('.index')))
     resp.set_cookie('running_exp', "", expires=0)
     resp.set_cookie('running_user', "", expires=0)
     return resp
@@ -175,7 +180,7 @@ def index():
         else:
             return render_template('index.html',form=form, active=True)
     else:
-        return render_template('myexperiments.html')
+        return redirect(url_for('.login',userid=current_user.get_id()))
 
 
 

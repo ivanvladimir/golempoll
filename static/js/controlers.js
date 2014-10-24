@@ -23,6 +23,22 @@ experimentApp.controller('ExperimentUserListCtrl', function ($scope,$http,$filte
 	});
 });
 
+
+experimentApp.controller('MissingExperimentListCtrl', function ($scope,$http,$filter,$attrs,ngTableParams) {
+    $http.get('/api/missing/'+$attrs.userid).success(function(data) {
+    $scope.exps = data.experiments;
+	if (data.experiments.length>0){
+    	$scope.data=true;
+	}else{
+    	$scope.data=false;
+	}
+
+	});
+});
+
+
+
+
 experimentApp.controller('AnswerListCtrl', function ($scope,$http,$filter,$attrs,ngTableParams) {
     $http.get('/api/answer/'+$attrs.expid).success(function(data) {
     $scope.answers = data;
@@ -154,8 +170,12 @@ experimentApp.controller('CookieController', ['$scope','$cookies', function($sco
 
 
 experimentApp.controller('GolemPollController', function ($scope, $http, $window, $cookies) {
+	
      $http.get('/api/definition/'+$cookies.running_exp).success(function(data) {
 		$scope.poll = data;
+		$scope.model.chosen=undefined;
+		$scope.model.intensity=0;
+	 	$scope.chosen=undefined;
 		var questions=[];
 		var options=[];
         var option=0;
@@ -170,6 +190,11 @@ experimentApp.controller('GolemPollController', function ($scope, $http, $window
 		};
 		$scope.questions=shuffle(questions);
 		$scope.options=shuffle(options);
+		$scope.tries=$scope.poll.media.files.length;
+		if (data.media.initial){
+			$scope.questions.unshift(data.media.initial);	
+			$scope.tries=$scope.poll.media.files.length+1;
+		}
 		$scope.current=0;
 		$scope.mainImage=$scope.poll.media.files[$scope.questions[$scope.current]];
 		$scope.start_time=new Date();
@@ -179,20 +204,24 @@ experimentApp.controller('GolemPollController', function ($scope, $http, $window
 	function (error) {
 	}
 	);
- 
+
+
 	$scope.next = function(chosen) {
 		if($scope.poll.media.control=="random"){
 			var ans=$scope.poll.options.keys[chosen];
+		}else if($scope.poll.media.control=="random_intense"){
+			var ans=$scope.poll.options.keys[$scope.model.chosen];
 		}else{
 			var ans=chosen;
 			$scope.option="";
 		}
 		var opt=$scope.poll.media.keys[$scope.questions[$scope.current]];
 		var delta_time=new Date()-$scope.start_time;
-		var info={'emotion': opt, 'answer': ans, 'delta': delta_time};
+		var intensity=$scope.model.intensity;
+		var info={'emotion': opt, 'answer': ans, 'delta': delta_time, 'intensity': intensity};
 		$scope.answers.push(info);
 		$scope.current+=1;
-		if($scope.current>=$scope.poll.media.files.length){
+		if($scope.current>=$scope.tries){
 			if($cookies.running_user!=undefined){
 			 	$http.put('/api/definition/'+$cookies.running_exp+'/'+$cookies.running_user,{answers:angular.toJson($scope.answers)}).success(function(data) {
 				}).error(function(data) {
@@ -205,6 +234,8 @@ experimentApp.controller('GolemPollController', function ($scope, $http, $window
 			$scope.options=shuffle($scope.options);
 			$scope.mainImage=$scope.poll.media.files[$scope.questions[$scope.current]];
 			$scope.start_time=new Date();
+			$scope.model.intensity=0;
+			$scope.model.chosen=undefined;
 		}
 	};
  
