@@ -25,7 +25,6 @@
 from flask import Flask, url_for, redirect, render_template
 from flask.ext.login import LoginManager
 from flask.ext.triangle import Triangle
-from flask.ext.mail import Mail
 from  flask.ext.restless import APIManager
 from flask.ext.login import (
     login_user,
@@ -41,6 +40,7 @@ from api import apiB
 from database import db_session
 from models import Admin, User, Experiment, ExperimentUser
 from forms import LoginF
+from mail import mail
 
 # Setting the WebAPP
 
@@ -72,13 +72,10 @@ app.register_blueprint(api_experimentuser,url_prefix='/api')
 Triangle(app)
 
 app.config.from_pyfile('golempoll.cfg')
-mail=Mail(app)
+mail.init_app(app)
 
 login_manager = LoginManager()
 login_manager.init_app(app)
-
-
-
 
 # Setting the database
 @app.teardown_appcontext

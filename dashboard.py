@@ -42,6 +42,7 @@ from json import loads, dumps
 from database import db_session, recent
 from models import User, Experiment, ExperimentUser
 from forms import ExperimentF, UserInviteF
+from mail import mail
 
 # Registering Blueprint
 dashboardB = Blueprint('dashboard', __name__,template_folder='templates')
