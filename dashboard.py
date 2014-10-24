@@ -396,9 +396,9 @@ def user_invite_userid(userid=None):
         return render_template('error.html',message="Proyecto no seleccionado",recent=recent.get())
     try:
         user=User.query.get(userid)
-    proj = int(proj)
     except:
         return render_template('error.html',message="Usuario in existente",recent=recent.get())
+    proj = int(proj)
     if not user.accepted:
         return render_template('error.html',message="Usuario no activo",recent=recent.get())
     exps=[0 for exp in user.experiments if exp.id==proj]
