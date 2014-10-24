@@ -125,8 +125,8 @@ def experiment_live(expid=None):
 @login_required
 def show_result(result):
     result=loads(result)
-    proj_id = int(request.cookies.get('running_exp'))
-    resp = make_response(render_template('result.html',result=result,expid=proj_id))
+    proj_id = request.cookies.get('running_exp')
+    resp = make_response(render_template('result.html',result=result,expid=int(proj_id)))
     resp.set_cookie('running_exp', "", expires=0)
     resp.set_cookie('running_user', "", expires=0)
     return resp
@@ -206,9 +206,9 @@ def experiment_select(expid):
 @login_required
 def experiment_close():
     resp = make_response(redirect(url_for('.dashboard')))
-    expid = int(request.cookies.get('project'))
+    expid = request.cookies.get('project')
     name = request.cookies.get('project_name')
-    recent.push(expid,name)
+    recent.push(int(expid),name)
     resp.set_cookie('project', "",expires=0)
     resp.set_cookie('project_name', "",expires=0)
 
@@ -391,11 +391,12 @@ def user_delete(userid=None):
 @login_required
 def user_invite_userid(userid=None):
     """Invite a user via email"""
-    proj = int(request.cookies.get('project'))
+    proj = request.cookies.get('project')
     if not proj:
         return render_template('error.html',message="Proyecto no seleccionado",recent=recent.get())
     try:
         user=User.query.get(userid)
+    proj = int(proj)
     except:
         return render_template('error.html',message="Usuario in existente",recent=recent.get())
     if not user.accepted:
