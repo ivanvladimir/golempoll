@@ -238,7 +238,7 @@ def experiment_clone(expid=None):
     exp.reinvitation=exp_.reinvitation
     db_session.add(exp)
     db_session.commit()
-    return redirect(url_for('.experiment_info',expid=expid))
+    return redirect(url_for('.experiment_info',expid=exp.id))
 
 # Activate experiment
 @dashboardB.route("/on/experiment/<int:expid>")
