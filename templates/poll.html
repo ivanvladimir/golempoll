@@ -25,14 +25,15 @@
 		<div ng-if="poll.media.control== 'random_intense'">
 
 		<div class="large-5 columns">
-		<p class="panel">
+		<br/>
+		<br/>
+		<p>
 		Escoje la emoción expresada
-	
 		</p>
 		<div ng-repeat="option in options">
-			  <input type="radio" name="option" ng-model="model.chosen" ng-value="option"> {% raw %}{{poll.options.labels[option] }}{% endraw %} <br/>
+			  <input ng_required="true" type="radio" name="option" ng-model="model.chosen" ng-value="option"> {% raw %}{{poll.options.labels[option] }}{% endraw %} <br/>
 		</div>
-		<p class="panel">
+		<p>
 		¿Qué intensidad crees que tiene?
 		</p>
 
@@ -52,7 +53,8 @@
 		<input type=range min=0 max=100 ng-model="model.intensity" id=fader style="width:80%;"></input>
 		</div>
 
-  		<a href="#" class="button expand" ng-click="next(chosen)" >Siguiente</a>
+  		<a  ng-if="model.chosen!=undefined" href="#" class="button expand" ng-click="next(chosen)" >Siguiente</a>
+  		<a  ng-if="model.chosen==undefined" href="#" class="button expand alert" >Sileccciona emoción</a>
 		</div>
 		</div>
 

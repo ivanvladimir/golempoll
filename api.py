@@ -98,8 +98,8 @@ def answers(expid):
     for exp in exps:
         if exp.janswers:
             answer = loads(exp.janswers)
-            print answer
             for ans in answer:
+                print ans
                 try:
                     ans_[ans['emotion']]
                 except KeyError:
