@@ -392,7 +392,7 @@ def user_delete(userid=None):
 @dashboardB.route("/nuke/user/<userid>")
 @login_required
 def user_nuke(userid):
-    user=db_session.query(User).get(userid)
+    user=User.query.filter(User.userid==userid).one()
     if not user:
         return render_template('error.html',message="Usuario no encontrado",recent=recent.get())
     for exp in user.experiments:
