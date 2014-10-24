@@ -53,8 +53,8 @@
 		<input type=range min=0 max=100 ng-model="model.intensity" id=fader style="width:80%;"></input>
 		</div>
 
-  		<a  ng-if="model.chosen!=undefined" href="#" class="button expand" ng-click="next(chosen)" >Siguiente</a>
-  		<a  ng-if="model.chosen==undefined" href="#" class="button expand alert" >Sileccciona emoción</a>
+  		<a  ng-if="model.chosen!=undefined && model.intensity>0" href="#" class="button expand" ng-click="next(chosen)" >Siguiente</a>
+  		<a  ng-if="model.chosen==undefined || model.intensity==0" href="#" class="button expand alert" >Seleccciona emoción e intensidad</a>
 		</div>
 		</div>
 
@@ -67,8 +67,10 @@
 			<br/>
 			<br/>
 			<br/>
-			<input  type="text" name="option" ng-model="option" ng-required=""/>
-			<a href="#"  class="button tiny" ng-click="next(option)">Siguiente</a>
+			<input  type="text" ng-model="model.chosen" ng-required=""/>
+			<a  ng-if="model.chosen!=undefined && model.chosen.length " href="#" class="button expand" ng-click="next(chosen)" >Siguiente</a>
+			<a  ng-if="model.chosen==undefined || mocdl.chosen.length==0" href="#" class="button expand alert" >Escribe una emocion</a>
+		
 		</div>
 		</div>
 

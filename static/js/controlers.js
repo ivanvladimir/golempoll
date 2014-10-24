@@ -176,6 +176,7 @@ experimentApp.controller('GolemPollController', function ($scope, $http, $window
 		$scope.model.chosen=undefined;
 		$scope.model.intensity=0;
 	 	$scope.chosen=undefined;
+		$scope.option=undefined;
 		var questions=[];
 		var options=[];
         var option=0;
@@ -212,8 +213,7 @@ experimentApp.controller('GolemPollController', function ($scope, $http, $window
 		}else if($scope.poll.media.control=="random_intense"){
 			var ans=$scope.poll.options.keys[$scope.model.chosen];
 		}else{
-			var ans=chosen;
-			$scope.option="";
+			var ans=$scope.model.chosen;
 		}
 		var opt=$scope.poll.media.keys[$scope.questions[$scope.current]];
 		var delta_time=new Date()-$scope.start_time;
