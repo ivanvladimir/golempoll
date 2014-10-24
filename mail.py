@@ -21,6 +21,7 @@
 # -------------------------------------------------------------------------
 
 # Flask imports
-from flask.ext.mail import Mail
+from flask.ext.mail import Mail, Message
+
 
 mail = Mail()

@@ -42,6 +42,7 @@ from json import loads, dumps
 from database import db_session, recent
 from models import User, Experiment, ExperimentUser
 from forms import ExperimentF, UserInviteF
+from flask.ext.mail import Message
 from mail import mail
 
 # Registering Blueprint
