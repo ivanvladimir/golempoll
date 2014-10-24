@@ -33,6 +33,7 @@ Usuarios
                 {{user.email | angular }}
             </td> 
 			<td data-title="'Edad'" sortable="'year_birthday'">
+			    {% raw %}
                 {{current_year-user.year_birthday }}
 				{% endraw %}
             </td> 
@@ -66,8 +67,8 @@ Usuarios
 		<a href="#"  ng-click="all()" class="button right tiny">All</a>
 		<a href="#"  ng-click="reset()" class="button right tiny alert">Reset</a>
 </div >
+{% endif %}
 </form>
-{%endif %}
 </div>
 
 {%endblock%}
