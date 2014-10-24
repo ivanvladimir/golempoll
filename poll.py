@@ -102,6 +102,18 @@ def poll_(expid=None):
     resp.set_cookie('running_user', str(user.id))
     return resp
 
+@pollB.route("/delete/<userid>")
+@login_required
+def user_delete(userid):
+    user=User.query.filter(User.userid==userid).one()
+    if not user:
+        return render_template('error_poll.html',message="Usuario no encontrado")
+    user.accepted=False
+    db_session.add(user)
+    db_session.commit()
+    return redirect(url_for('logout'))
+
+
 @pollB.route("/del")
 @pollB.route("/del/<int:expid>")
 @login_required
