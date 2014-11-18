@@ -32,10 +32,12 @@ from flask import (
     current_app
     )
 from flask.ext.login import login_required
+from werkzeug import secure_filename
 
 # Extra import
 from datetime import datetime
 import uuid
+import os
 from json import loads, dumps
 
 # Local import
@@ -44,6 +46,9 @@ from models import User, Experiment, ExperimentUser
 from forms import ExperimentF, UserInviteF
 from flask.ext.mail import Message
 from mail import mail
+
+
+ALLOWED_EXTENSIONS = set(['png', 'jpg', 'jpeg', 'gif'])
 
 # Registering Blueprint
 dashboardB = Blueprint('dashboard', __name__,template_folder='templates')
@@ -470,5 +475,22 @@ def experiment_invite():
 @login_required
 def media_list():
     return render_template('media.html')
+
+
+def allowed_file(filename):
+    return '.' in filename and \
+               filename.rsplit('.', 1)[1] in ALLOWED_EXTENSIONS
+
+# Upload
+@dashboardB.route("/upload",methods=['GET', 'POST'])
+@login_required
+def media_upload():
+    if request.method == 'POST':
+        file = request.files['file']
+        if file and allowed_file(file.filename):
+            filename = secure_filename(file.filename)
+            file.save(os.path.join(current_app.config['UPLOAD_FOLDER'],filename))
+            return redirect(url_for('.media_list'))
+    return render_template('upload.html')
 
 

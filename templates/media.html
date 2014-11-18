@@ -16,6 +16,14 @@ Media
 	</div>
 </div>
 
+<div class="row">
+<div class="large-7 columns">
+			<a href="{{url_for('.media_upload')}}" class="button left">Subir imagen</a>
+</div>
+</div>
+
+
+
 <div ng-controller="MediaListCtrl">
 	<ul class='container' ng-repeat="file in files.files | filter:query">
 			<ul><img width="100px" src="/static/media/{{file | angular }}"/></ul>
