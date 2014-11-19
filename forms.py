@@ -44,10 +44,10 @@ class UserF(Form):
     year_birthday   = IntegerField(u'Año de nacimiento', [validators.DataRequired()])
     level      = SelectField(u'Escolaridad', 
                         [validators.DataRequired()],
-                        choices=[('prim',u'Primaria'),('sec',u'Secunadaria'),('prep',u'Prepa'),('uni',u'Universidad'),('pos',u'Posgrado')])
+                        choices=[('prim',u'Primaria'),('sec',u'Secundaria'),('prep',u'Prepa'),('uni',u'Universidad'),('pos',u'Posgrado')])
     gender     = SelectField(u'Género',
                         [validators.DataRequired()],
-                        choices=[('M',u'Masculino'),('F',u'Fememino')])
+                        choices=[('M',u'Masculino'),('F',u'Femenino')])
     previous   = SelectField(u'Experiencia previa con robots',
                         [validators.DataRequired()],
                         choices=[('no',u'No'),('yes',u'Sí')])
