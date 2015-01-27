@@ -37,6 +37,7 @@ from flask.ext.login import (
     login_required)
 import uuid
 # Local Imports
+from datetime import datetime
 from database import db_session
 from models import User, Experiment, ExperimentUser
 from forms import UserF, UserInviteF
@@ -82,7 +83,47 @@ def login(userid):
     if not user.confirmed:
         return redirect(url_for('.user_confirmation',userid=userid))
     return render_template('myexperiments.html',projs=user.experiments,user=user)
-              
+
+
+# Instrutions
+@pollB.route("/invite/<int:expid>", methods=['GET','POST'])
+def invite(expid=None):
+    exp=db_session.query(Experiment).get(expid)
+    if not exp:
+        return render_template('error_poll.html',message="Experimento no definido")
+    form=UserInviteF(request.form)
+    if form.cancel.data:
+        return redirect(url_for('poll.index'))
+    if form.validate_on_submit():
+        user_mail=User.query.filter(User.email==form.email.data).all()
+        if not user_mail:
+            u=uuid.uuid4()
+            userid=str(u)
+            print userid
+            user=User(userid)
+            form.populate_obj(user)
+            db_session.add(user)
+            db_session.commit()
+            eu=ExperimentUser(experiment=exp,user=user,accepted=False,finish=False,date_invited=datetime.now())
+            db_session.add(eu)
+            db_session.commit()
+            # TODO add send email
+            return render_template('emailsent.html',exp=exp)
+        else:
+            user=user_mail[0]
+            ans=db_session.query(ExperimentUser).get((user.id,exp.id))
+            if not ans:
+                eu=ExperimentUser(experiment=exp,user=user,accepted=False,finish=False,date_invited=datetime.now())
+                db_session.add(eu)
+                db_session.commit()
+                # TODO send mail nuevo experimento
+            else:
+                # TODO add send mail con recordatorio
+                pass
+            return render_template('emailsent.html',exp=exp)
+    else:
+        return render_template('invite_experiment.html',form=form,exp=exp)
+
 # Instrutions
 @pollB.route("/poll/<int:expid>")
 @login_required

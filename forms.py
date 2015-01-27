@@ -41,7 +41,9 @@ class LoginF(Form):
     cancel   = SubmitField("Cancelar")
 
 class UserF(Form):
-    year_birthday   = IntegerField(u'Año de nacimiento', [validators.DataRequired()])
+    year_birthday   = SelectField(u'Año de nacimiento',
+                        [validators.DataRequired()],
+                        choices=[(y,str(y)) for y in range(2010,1950)])
     level      = SelectField(u'Escolaridad', 
                         [validators.DataRequired()],
                         choices=[('prim',u'Primaria'),('sec',u'Secundaria'),('prep',u'Prepa'),('uni',u'Universidad'),('pos',u'Posgrado')])

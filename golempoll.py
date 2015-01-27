@@ -134,7 +134,7 @@ def login_admin():
             login_user(admin, remember=True)
             return redirect(url_for('dashboard.dashboard'))
         else:
-            return render_template("error.html", message="Nombre o password incorrecto")
+            return render_template("error_poll.html", message="Nombre o password incorrecto")
     return render_template("login.html", form=form)
 
 
