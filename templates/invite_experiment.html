@@ -1,0 +1,36 @@
+{% extends "default.html" %}
+
+{% macro render_field(field) %}
+  <dt>{{ field.label }}
+  <dd>{{ field(**kwargs)|safe }}
+  {% if field.errors %}
+    <ul class=errors>
+    {% for error in field.errors %}
+      <li>{{ error }}</li>
+    {% endfor %}
+    </ul>
+  {% endif %}
+  </dd>
+{% endmacro %}
+
+
+
+{% block title %}Dashboard: Experimentos Golem{% endblock %}
+
+{% block content %}
+
+<h1>Hola</h1>
+
+<p>
+Te invitamos a que nos apoyes con la realización del experimento: {{ exp.name }}, tomará unos cuantos minutos, para lo anterior te pedimos que registres proporcionandonos tu correo electrónico:
+</p>
+
+<form action={{url_for(".invite",expid=exp.id)}} method="POST" accept-charset="utf-8" enctype="multipart/form-data">
+    {{ form.csrf_token }}
+    {{ render_field(form.email)}}
+	{{ form.save() }} {{form.cancel()}} 
+</form>
+
+{%endblock%}
+
+
