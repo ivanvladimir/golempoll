@@ -1,0 +1,75 @@
+{% extends "dashboard.html" %}
+
+{% block scripts %}
+<script src="http://bazalt-cms.com/assets/ng-table/0.3.1/ng-table.js"></script>
+<link data-require="ng-table@*" data-semver="0.3.1" rel="stylesheet" href="http://bazalt-cms.com/assets/ng-table/0.3.1/ng-table.css" />
+{% endblock %}
+
+{% block title %}Lista de usuarios {% endblock %}
+
+{% block content %}
+
+<h1>
+Usuarios no registrados en: {{exp.name}}
+</h1>
+<div class="row">
+    <div class="large-6 columns">
+	<label>Filtrar:</label> <input  type="text" placeholder="Inserta palabras clave"  ng-model="query"/>
+	</div>
+</div>
+
+<div  ng-controller="NoUserListCtrl" expid="{{exp.id}}">
+{%if exp.status %}
+<form name="input" action="{{url_for(".users_invite")}}" method="POST">
+{%endif %}
+<table ng-table="tableParams" class="table">
+	<tr ng-repeat="user in users | filter:query">
+			<td data-title="'Confirmed'">
+			    {% raw %}
+                {{user.confirmed | checkmark  }}
+			    {% endraw %}
+            </td>
+ 			<td data-title="'e-mail'" sortable="'email'">
+                {{user.email | angular }}
+            </td> 
+			<td data-title="'Edad'" sortable="'year_birthday'">
+                {{current_year-user.year_birthday }}
+				{% endraw %}
+            </td> 
+			<td data-title="'Genero'" sortable="'gender'">
+                {{user.gender | angular}}
+            </td> 
+			<td data-title="'Escol.'" sortable="'level'">
+                {{user.level | angular }}
+            </td> 
+			<td data-title="'Exp.'" sortable="'previous'">
+                {{user.previous | angular }}
+            </td> 
+			<td data-title="'Actions'">
+				<a href="{{url_for('.user_invite')}}/{{user.id | angular}}" class="button tiny">Invite</a>
+				<a href="{{url_for('.user_info')}}/{{user.userid | angular}}" class="button tiny">Info</a>
+				<a class="modal-confirm button tiny alert" data-title="Confirmación para borrar proyecto" data-content="¿Estás seguro de querer borrar el usuario: {{exp.mail| angular}}?" data-options='{"confirmType" : "url" , "confirmArgs" : "{{url_for('.user_delete',expid=None)}}/{{user.id | angular}}","confirmText":"Sí", "cancelText":"No","color":"#000"}' >Borrar</a>
+
+            </td>
+			{% if exp.status %}
+				<td data-title="'Invitar'">
+				<input name="{{user.id | angular}}" type="checkbox"  ng-model="user.selected"/>
+				</td>
+			{% endif %}
+	</tr>
+</table>
+{%if exp.status %}
+
+<div class="row">
+		<input type="submit" class="button right tiny" value="Invitar"/>
+		<a href="#"  ng-click="random()" class="button right tiny">Random</a>
+		<a href="#"  ng-click="all()" class="button right tiny">All</a>
+		<a href="#"  ng-click="reset()" class="button right tiny alert">Reset</a>
+</div >
+</form>
+{%endif %}
+</div>
+
+{%endblock%}
+
+
