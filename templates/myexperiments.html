@@ -10,7 +10,7 @@
 <div  ng-controller="MissingExperimentListCtrl" userid="{{user.id}}">
 <div ng-if='data'>
 <p>
-Los sisguientes son los experimentos en los que desamos que nos apoyes, puedes escojer declinar la invitación o contestarlos.
+Los siguientes son los experimentos en los que deseamos que nos apoyes, puedes escoger declinar la invitación o contestarlos.
 </p>
 <table ng-table="tableParams" class="table">
 	<tr ng-repeat="exp in exps | filter:query">
